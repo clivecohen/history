@@ -80,9 +80,10 @@ eventsList.addEventListener("drop", (e) => {
     feedbackDisplay.textContent = "Incorrect. 0 points";
     feedbackDisplay.style.color = "red";
 
-    // Move the tile to the correct position
+    // Move the tile to the correct position with animation
     const correctPosition = findCorrectPosition(draggedItem);
     eventsList.insertBefore(draggedItem, correctPosition);
+    draggedItem.style.animation = "slide 0.3s ease";
   }
 
   // Update score display
