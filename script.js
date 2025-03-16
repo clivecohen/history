@@ -1,11 +1,32 @@
-// Initialize score
+// List of historical events (you can edit this)
+const events = [
+  { event: "1668: Benedictine monk improves Champagne wines", year: 1668 },
+  { event: "1943: Los Angeles experiences first smog", year: 1943 },
+  { event: "1969: Moon Landing", year: 1969 },
+  { event: "1989: Fall of the Berlin Wall", year: 1989 },
+];
+
+let currentEventIndex = 0;
 let score = 0;
 const scoreDisplay = document.getElementById("score");
 const feedbackDisplay = document.getElementById("feedback");
-
-// Get the draggable event and timeline
+const timeline = document.getElementById("timeline");
 const draggableEvent = document.getElementById("draggable-event");
-const timeline = document.querySelector(".timeline");
+
+// Initialize the game
+function initGame() {
+  if (currentEventIndex < events.length) {
+    const event = events[currentEventIndex];
+    draggableEvent.textContent = event.event;
+    draggableEvent.dataset.year = event.year;
+    draggableEvent.style.display = "block";
+    draggableEvent.style.opacity = "1";
+    currentEventIndex++;
+  } else {
+    draggableEvent.style.display = "none";
+    feedbackDisplay.textContent = "Game Over!";
+  }
+}
 
 // Add touch and mouse event listeners for dragging
 draggableEvent.addEventListener("touchstart", startDrag);
@@ -47,13 +68,18 @@ function endDrag(e) {
   const eventRect = draggableEvent.getBoundingClientRect();
 
   if (eventRect.top > timelineRect.top && eventRect.bottom < timelineRect.bottom) {
-    showFeedback("+10", "green");
-    score += 10;
-    scoreDisplay.textContent = score;
-    draggableEvent.style.backgroundColor = "#444"; // Lock color
-    draggableEvent.style.cursor = "default";
-    draggableEvent.removeEventListener("touchstart", startDrag);
-    draggableEvent.removeEventListener("mousedown", startDrag);
+    const correctPosition = findCorrectPosition(draggableEvent);
+    if (correctPosition) {
+      timeline.insertBefore(draggableEvent, correctPosition);
+      showFeedback("+10", "green");
+      score += 10;
+      scoreDisplay.textContent = score;
+      draggableEvent.style.backgroundColor = "#444"; // Lock color
+      draggableEvent.style.cursor = "default";
+      draggableEvent.removeEventListener("touchstart", startDrag);
+      draggableEvent.removeEventListener("mousedown", startDrag);
+      setTimeout(initGame, 1000); // Introduce next event
+    }
   } else {
     showFeedback("0", "red");
     setTimeout(() => {
@@ -64,6 +90,17 @@ function endDrag(e) {
   }
 }
 
+function findCorrectPosition(item) {
+  const year = parseInt(item.dataset.year);
+  const events = [...timeline.querySelectorAll(".event")];
+  for (let i = 0; i < events.length; i++) {
+    if (year < parseInt(events[i].dataset.year)) {
+      return events[i];
+    }
+  }
+  return null;
+}
+
 function showFeedback(text, color) {
   feedbackDisplay.textContent = text;
   feedbackDisplay.style.color = color;
@@ -72,3 +109,6 @@ function showFeedback(text, color) {
     feedbackDisplay.style.opacity = "0";
   }, 1000);
 }
+
+// Start the game
+initGame();
