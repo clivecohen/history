@@ -1,6 +1,6 @@
 // List of historical events (you can edit this)
 const events = [
-  { event: "The Fall of the Berlin Wall", year: 1989 },
+  { event: "The Ball of the Berlin Wall", year: 1989 },
   { event: "The Moon Landing", year: 1969 },
   { event: "The Signing of the Declaration of Independence", year: 1776 },
   { event: "The End of World War II", year: 1945 },
