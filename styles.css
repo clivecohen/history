@@ -1,6 +1,6 @@
 body {
   font-family: 'Arial', sans-serif;
-  background: linear-gradient(135deg, #6a11cb, #2575fc);
+  background: #1a1a1a; /* Dark background */
   margin: 0;
   padding: 0;
   display: flex;
@@ -11,18 +11,18 @@ body {
 }
 
 .container {
-  background: rgba(255, 255, 255, 0.1);
+  background: #2d2d2d; /* Dark gray container */
   padding: 20px;
   border-radius: 15px;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-  width: 400px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  width: 500px; /* Larger width */
   text-align: center;
 }
 
 h1 {
   font-size: 1.8rem;
   margin-bottom: 20px;
+  color: #fff;
 }
 
 .source-area, .game-area {
@@ -32,33 +32,44 @@ h1 {
 h2 {
   font-size: 1.2rem;
   margin-bottom: 10px;
+  color: #ccc;
 }
 
 ul {
   list-style-type: none;
   padding: 0;
   min-height: 100px;
-  border: 2px dashed rgba(255, 255, 255, 0.3);
+  border: 2px dashed #555; /* Gray dashed border */
   border-radius: 10px;
   padding: 10px;
+  background: #333; /* Dark gray background */
 }
 
 li {
-  background: rgba(255, 255, 255, 0.2);
+  background: #444; /* Gray background for tiles */
   padding: 10px;
   margin: 5px 0;
   border-radius: 8px;
   cursor: grab;
   user-select: none;
-  transition: background 0.3s ease;
+  transition: background 0.3s ease, transform 0.3s ease;
 }
 
 li:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: #555; /* Lighter gray on hover */
 }
 
 .game-area ul {
-  background: rgba(0, 0, 0, 0.2);
+  background: #222; /* Darker background for timeline */
+  position: relative;
+}
+
+.timeline-ruler {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  color: #ccc;
+  font-size: 0.9rem;
 }
 
 .score-area {
@@ -67,10 +78,23 @@ li:hover {
 
 #score {
   font-weight: bold;
-  color: #ffdd57;
+  color: #ffdd57; /* Yellow for score */
 }
 
 #feedback {
   font-weight: bold;
   margin-top: 10px;
+  color: #ff6b6b; /* Red for feedback */
+}
+
+/* Animation for moving tiles */
+@keyframes slide {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
