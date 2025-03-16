@@ -13,8 +13,12 @@ const shuffledEvents = events.sort(() => Math.random() - 0.5);
 // Get the DOM elements
 const sourceList = document.getElementById("source-list");
 const eventsList = document.getElementById("events-list");
-const checkOrderButton = document.getElementById("check-order");
-const resultText = document.getElementById("result");
+const scoreDisplay = document.getElementById("score");
+const feedbackDisplay = document.getElementById("feedback");
+
+// Initialize score and drop count
+let score = 0;
+let dropCount = 0;
 
 // Add the first event to the game area
 const initialEvent = shuffledEvents.pop();
@@ -56,10 +60,52 @@ eventsList.addEventListener("dragover", (e) => {
   }
 });
 
-eventsList.addEventListener("dragend", (e) => {
-  setTimeout(() => e.target.style.opacity = "1", 0);
-  draggedItem = null;
+eventsList.addEventListener("drop", (e) => {
+  e.preventDefault();
+  setTimeout(() => draggedItem.style.opacity = "1", 0);
+
+  // Validate the order
+  const orderedEvents = [...eventsList.querySelectorAll("li")].map((li) => parseInt(li.dataset.year));
+  const isCorrect = orderedEvents.every((year, index, array) => !index || year >= array[index - 1]);
+
+  // Update score and feedback
+  dropCount++;
+  let points = 0;
+  if (isCorrect) {
+    points = dropCount === 1 ? 10 : dropCount === 2 ? 20 : dropCount === 5 ? 50 : 0;
+    score += points;
+    feedbackDisplay.textContent = `Correct! +${points} points`;
+    feedbackDisplay.style.color = "lightgreen";
+  } else {
+    feedbackDisplay.textContent = "Incorrect. 0 points";
+    feedbackDisplay.style.color = "red";
+
+    // Move the tile to the correct position
+    const correctPosition = findCorrectPosition(draggedItem);
+    eventsList.insertBefore(draggedItem, correctPosition);
+  }
+
+  // Update score display
+  scoreDisplay.textContent = score;
+
+  // Disable further dragging if all events are placed
+  if (dropCount === 4) {
+    feedbackDisplay.textContent += " Game Over!";
+    sourceList.querySelectorAll("li").forEach((li) => (li.draggable = false));
+  }
 });
+
+// Helper function to find the correct position for an event
+function findCorrectPosition(item) {
+  const year = parseInt(item.dataset.year);
+  const events = [...eventsList.querySelectorAll("li")];
+  for (let i = 0; i < events.length; i++) {
+    if (year < parseInt(events[i].dataset.year)) {
+      return events[i];
+    }
+  }
+  return null;
+}
 
 // Helper function to determine where to insert the dragged item
 function getDragAfterElement(container, y) {
@@ -76,17 +122,3 @@ function getDragAfterElement(container, y) {
     }
   }, { offset: Number.NEGATIVE_INFINITY }).element;
 }
-
-// Check the order of events
-checkOrderButton.addEventListener("click", () => {
-  const orderedEvents = [...eventsList.querySelectorAll("li")].map((li) => parseInt(li.dataset.year));
-  const isCorrect = orderedEvents.every((year, index, array) => !index || year >= array[index - 1]);
-
-  if (isCorrect) {
-    resultText.textContent = "Correct! You got the order right!";
-    resultText.style.color = "green";
-  } else {
-    resultText.textContent = "Incorrect. Try again!";
-    resultText.style.color = "red";
-  }
-});
