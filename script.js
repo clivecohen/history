@@ -1,6 +1,6 @@
 // List of historical events (you can edit this)
 const events = [
-  { event: "1668: Benedictine trunk improves Champagne wines", year: 1668 },
+  { event: "1668: Benedictine monk improves Champagne wines", year: 1668 },
   { event: "1943: Los Angeles experiences first smog", year: 1943 },
   { event: "1969: Moon Landing", year: 1969 },
   { event: "1989: Fall of the Berlin Wall", year: 1989 },
