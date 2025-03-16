@@ -1,75 +1,67 @@
 body {
   font-family: 'Arial', sans-serif;
-  background: #1a1a1a; /* Dark background */
+  background: #f4f4f9;
   margin: 0;
   padding: 0;
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
-  color: #fff;
+  color: #333;
 }
 
 .container {
-  background: #2d2d2d; /* Dark gray container */
+  background: #fff;
   padding: 20px;
   border-radius: 15px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-  width: 500px; /* Larger width */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 90%;
+  max-width: 400px;
   text-align: center;
 }
 
 h1 {
-  font-size: 1.8rem;
+  font-size: 1.5rem;
   margin-bottom: 20px;
-  color: #fff;
+  color: #333;
 }
 
-.source-area, .game-area {
+.game-area {
+  position: relative;
   margin-bottom: 20px;
 }
 
-h2 {
-  font-size: 1.2rem;
-  margin-bottom: 10px;
-  color: #ccc;
-}
-
-ul {
-  list-style-type: none;
-  padding: 0;
-  min-height: 100px;
-  border: 2px dashed #555; /* Gray dashed border */
-  border-radius: 10px;
+.timeline {
+  background: #e0e0e0;
   padding: 10px;
-  background: #333; /* Dark gray background */
+  border-radius: 10px;
+  min-height: 100px;
 }
 
-li {
-  background: #444; /* Gray background for tiles */
+.event {
+  background: #444;
+  color: #fff;
   padding: 10px;
   margin: 5px 0;
   border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.draggable-event {
+  background: #ff6b6b; /* Bright color for draggable event */
+  color: #fff;
+  padding: 10px;
+  border-radius: 8px;
   cursor: grab;
   user-select: none;
-  transition: background 0.3s ease, transform 0.3s ease;
-}
-
-li:hover {
-  background: #555; /* Lighter gray on hover */
-}
-
-.game-area ul {
-  background: #222; /* Darker background for timeline */
-  position: relative;
-}
-
-.timeline-ruler {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
-  color: #ccc;
-  font-size: 0.9rem;
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .score-area {
@@ -78,23 +70,24 @@ li:hover {
 
 #score {
   font-weight: bold;
-  color: #ffdd57; /* Yellow for score */
+  color: #007bff;
 }
 
-#feedback {
+.feedback {
+  font-size: 2rem;
   font-weight: bold;
-  margin-top: 10px;
-  color: #ff6b6b; /* Red for feedback */
+  margin-top: 20px;
+  opacity: 0;
+  transition: opacity 0.5s ease;
 }
 
-/* Animation for moving tiles */
-@keyframes slide {
-  from {
-    transform: translateY(-10px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
+@keyframes flyOut {
+  0% {
+    transform: scale(1);
     opacity: 1;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
   }
 }
