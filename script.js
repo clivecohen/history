@@ -1,114 +1,92 @@
-// List of historical events (you can edit this)
-const events = [
-  { event: "1668: Benedictine monk improves Champagne wines", year: 1668 },
-  { event: "1943: Los Angeles experiences first smog", year: 1943 },
-  { event: "1969: Moon Landing", year: 1969 },
-  { event: "1989: Fall of the Berlin Wall", year: 1989 },
+const container = document.getElementById('gameContainer');
+const tapButton = document.getElementById('tapButton');
+let activeSquare = null;
+let squares = [];
+let score = 0;
+
+const triviaData = [
+    { text: "This band broke up in 1970", correctY: 400 },
+    { text: "This console launched in 2006", correctY: 300 },
+    { text: "This movie won Best Picture in 2004", correctY: 200 },
+    { text: "This gadget launched in 1997", correctY: 100 }
 ];
 
-let currentEventIndex = 0;
-let score = 0;
-const scoreDisplay = document.getElementById("score");
-const feedbackDisplay = document.getElementById("feedback");
-const timeline = document.getElementById("timeline");
-const draggableEvent = document.getElementById("draggable-event");
-
-// Initialize the game
-function initGame() {
-  if (currentEventIndex < events.length) {
-    const event = events[currentEventIndex];
-    draggableEvent.textContent = event.event;
-    draggableEvent.dataset.year = event.year;
-    draggableEvent.style.display = "block";
-    draggableEvent.style.opacity = "1";
-    currentEventIndex++;
-  } else {
-    draggableEvent.style.display = "none";
-    feedbackDisplay.textContent = "Game Over!";
-  }
+function startGame() {
+    addSquare(0);
 }
 
-// Add touch and mouse event listeners for dragging
-draggableEvent.addEventListener("touchstart", startDrag);
-draggableEvent.addEventListener("mousedown", startDrag);
+function addSquare(index) {
+    if (index >= triviaData.length) return;
 
-let isDragging = false;
-let initialX, initialY;
+    const square = document.createElement('div');
+    square.classList.add('square', 'active');
+    square.innerText = triviaData[index].text;
+    square.dataset.index = index;
+    square.style.left = `${(window.innerWidth - 300) / 2}px`;
+    square.style.top = `${100}px`;
+    container.appendChild(square);
+    squares.push(square);
+    activeSquare = square;
 
-function startDrag(e) {
-  e.preventDefault();
-  isDragging = true;
-  const touch = e.touches ? e.touches[0] : e;
-  initialX = touch.clientX - draggableEvent.offsetLeft;
-  initialY = touch.clientY - draggableEvent.offsetTop;
-  document.addEventListener("touchmove", drag);
-  document.addEventListener("mousemove", drag);
-  document.addEventListener("touchend", endDrag);
-  document.addEventListener("mouseup", endDrag);
+    square.addEventListener('touchstart', onTouchStart);
+    square.addEventListener('touchmove', onTouchMove);
+    square.addEventListener('touchend', onTouchEnd);
 }
 
-function drag(e) {
-  if (!isDragging) return;
-  const touch = e.touches ? e.touches[0] : e;
-  const newX = touch.clientX - initialX;
-  const newY = touch.clientY - initialY;
-  draggableEvent.style.left = `${newX}px`;
-  draggableEvent.style.top = `${newY}px`;
+function onTouchStart(e) {
+    e.preventDefault();
+    activeSquare.style.transition = 'none';
 }
 
-function endDrag(e) {
-  isDragging = false;
-  document.removeEventListener("touchmove", drag);
-  document.removeEventListener("mousemove", drag);
-  document.removeEventListener("touchend", endDrag);
-  document.removeEventListener("mouseup", endDrag);
+function onTouchMove(e) {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const x = touch.clientX - activeSquare.offsetWidth / 2;
+    const y = touch.clientY - activeSquare.offsetHeight / 2;
+    activeSquare.style.left = `${x}px`;
+    activeSquare.style.top = `${y}px`;
+}
 
-  // Check if the event is in the correct position
-  const timelineRect = timeline.getBoundingClientRect();
-  const eventRect = draggableEvent.getBoundingClientRect();
+function onTouchEnd(e) {
+    e.preventDefault();
+    tapButton.classList.add('visible');
+    tapButton.onclick = () => placeSquare();
+}
 
-  if (eventRect.top > timelineRect.top && eventRect.bottom < timelineRect.bottom) {
-    const correctPosition = findCorrectPosition(draggableEvent);
-    if (correctPosition) {
-      timeline.insertBefore(draggableEvent, correctPosition);
-      showFeedback("+10", "green");
-      score += 10;
-      scoreDisplay.textContent = score;
-      draggableEvent.style.backgroundColor = "#444"; // Lock color
-      draggableEvent.style.cursor = "default";
-      draggableEvent.removeEventListener("touchstart", startDrag);
-      draggableEvent.removeEventListener("mousedown", startDrag);
-      setTimeout(initGame, 1000); // Introduce next event
+function placeSquare() {
+    tapButton.classList.remove('visible');
+    const index = parseInt(activeSquare.dataset.index);
+    const correctY = triviaData[index].correctY;
+    const currentY = parseInt(activeSquare.style.top);
+
+    const tolerance = 50;
+    const isCorrect = Math.abs(currentY - correctY) <= tolerance;
+
+    showScore(isCorrect, activeSquare);
+    activeSquare.classList.remove('active');
+    activeSquare.classList.add('locked');
+
+    if (!isCorrect) {
+        activeSquare.style.transition = 'top 0.5s ease-in-out';
+        activeSquare.style.top = `${correctY}px`;
     }
-  } else {
-    showFeedback("0", "red");
-    setTimeout(() => {
-      draggableEvent.style.top = "-60px";
-      draggableEvent.style.left = "50%";
-      draggableEvent.style.transform = "translateX(-50%)";
-    }, 500);
-  }
+
+    activeSquare = null;
+    setTimeout(() => addSquare(index + 1), 1000);
 }
 
-function findCorrectPosition(item) {
-  const year = parseInt(item.dataset.year);
-  const events = [...timeline.querySelectorAll(".event")];
-  for (let i = 0; i < events.length; i++) {
-    if (year < parseInt(events[i].dataset.year)) {
-      return events[i];
-    }
-  }
-  return null;
+function showScore(isCorrect, square) {
+    const scoreEl = document.createElement('div');
+    scoreEl.classList.add('score');
+    scoreEl.classList.add(isCorrect ? 'correct' : 'incorrect');
+    scoreEl.innerText = isCorrect ? '+10' : '0';
+    scoreEl.style.left = `${parseInt(square.style.left) + square.offsetWidth / 2 - 20}px`;
+    scoreEl.style.top = `${parseInt(square.style.top) + square.offsetHeight / 2 - 20}px`;
+    container.appendChild(scoreEl);
+
+    if (isCorrect) score += 10;
+
+    setTimeout(() => scoreEl.remove(), 1000);
 }
 
-function showFeedback(text, color) {
-  feedbackDisplay.textContent = text;
-  feedbackDisplay.style.color = color;
-  feedbackDisplay.style.opacity = "1";
-  setTimeout(() => {
-    feedbackDisplay.style.opacity = "0";
-  }, 1000);
-}
-
-// Start the game
-initGame();
+startGame();
