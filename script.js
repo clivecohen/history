@@ -1,4 +1,3 @@
-// Wait for DOM to load before running the script
 document.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('gameContainer');
     const tapButton = document.getElementById('tapButton');
@@ -30,9 +29,11 @@ document.addEventListener('DOMContentLoaded', () => {
         squares.push(square);
         activeSquare = square;
 
-        square.addEventListener('touchstart', onTouchStart);
-        square.addEventListener('touchmove', onTouchMove);
-        square.addEventListener('touchend', onTouchEnd);
+        // Add touch and mouse event listeners
+        square.addEventListener('touchstart', onTouchStart, { passive: false });
+        square.addEventListener('touchmove', onTouchMove, { passive: false });
+        square.addEventListener('touchend', onTouchEnd, { passive: false });
+        square.addEventListener('mousedown', onMouseDown);
     }
 
     function onTouchStart(e) {
@@ -55,11 +56,38 @@ document.addEventListener('DOMContentLoaded', () => {
         tapButton.onclick = () => placeSquare();
     }
 
+    // Mouse support for desktop testing
+    function onMouseDown(e) {
+        e.preventDefault();
+        activeSquare.style.transition = 'none';
+
+        const onMouseMove = (moveEvent) => {
+            const x = moveEvent.clientX - activeSquare.offsetWidth / 2;
+            const y = moveEvent.clientY - activeSquare.offsetHeight / 2;
+            activeSquare.style.left = `${x}px`;
+            activeSquare.style.top = `${y}px`;
+        };
+
+        const onMouseUp = () => {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+            tapButton.classList.add('visible');
+            tapButton.onclick = () => placeSquare();
+        };
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+    }
+
     function placeSquare() {
+        if (!activeSquare) return; // Prevent multiple clicks
+
         tapButton.classList.remove('visible');
+        tapButton.onclick = null; // Clear previous onclick to avoid stacking
+
         const index = parseInt(activeSquare.dataset.index);
         const correctY = triviaData[index].correctY;
-        const currentY = parseInt(activeSquare.style.top);
+        const currentY = parseFloat(activeSquare.style.top) || 0;
 
         const tolerance = 50;
         const isCorrect = Math.abs(currentY - correctY) <= tolerance;
@@ -73,17 +101,17 @@ document.addEventListener('DOMContentLoaded', () => {
             activeSquare.style.top = `${correctY}px`;
         }
 
+        const nextIndex = index + 1;
         activeSquare = null;
-        setTimeout(() => addSquare(index + 1), 1000);
+        setTimeout(() => addSquare(nextIndex), 1000);
     }
 
     function showScore(isCorrect, square) {
         const scoreEl = document.createElement('div');
-        scoreEl.classList.add('score');
-        scoreEl.classList.add(isCorrect ? 'correct' : 'incorrect');
+        scoreEl.classList.add('score', isCorrect ? 'correct' : 'incorrect');
         scoreEl.innerText = isCorrect ? '+10' : '0';
-        scoreEl.style.left = `${parseInt(square.style.left) + square.offsetWidth / 2 - 20}px`;
-        scoreEl.style.top = `${parseInt(square.style.top) + square.offsetHeight / 2 - 20}px`;
+        scoreEl.style.left = `${parseFloat(square.style.left) + square.offsetWidth / 2 - 20}px`;
+        scoreEl.style.top = `${parseFloat(square.style.top) + square.offsetHeight / 2 - 20}px`;
         container.appendChild(scoreEl);
 
         if (isCorrect) score += 10;
@@ -91,6 +119,5 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => scoreEl.remove(), 1000);
     }
 
-    // Start the game once DOM is ready
     startGame();
 });
