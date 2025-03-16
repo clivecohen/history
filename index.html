@@ -8,7 +8,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>Put These Events in Historical Order</h1>
+    <h1>Historical Timeline Game</h1>
     <div class="source-area">
       <h2>Drag an Event to the Timeline</h2>
       <ul id="source-list">
@@ -21,8 +21,10 @@
         <!-- Initial event will appear here -->
       </ul>
     </div>
-    <button id="check-order">Check Order</button>
-    <p id="result"></p>
+    <div class="score-area">
+      <p>Score: <span id="score">0</span></p>
+      <p id="feedback"></p>
+    </div>
   </div>
   <script src="script.js"></script>
 </body>
