@@ -5,85 +5,144 @@
     <style>
         body {
             font-family: sans-serif;
+            background-color: #f0f0f0; /* Light gray background */
+        }
+
+        #game-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center; /* Center everything horizontally */
         }
 
         #timeline-container {
-            width: 80%;
-            margin: 0 auto;
+            width: 300px; /* Fixed width, similar to the image */
+            margin: 0 auto; /* Center horizontally */
             position: relative;
-            border-left: 5px solid black;
-            padding-left: 20px;
-            min-height: 500px; /* Ensure enough space for movement */
+            border-left: 5px solid #3498db; /* Blue timeline, like the image */
+            padding-left: 30px; /* More left padding for the year */
+            min-height: 600px; /* Ensure enough space */
+            background-color: white;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Subtle shadow */
         }
 
         .event-box {
-            background-color: lightblue;
-            border: 1px solid darkblue;
-            padding: 10px;
-            margin-bottom: 10px;
+            background-color: #ecf0f1; /* Light gray event boxes */
+            border: 2px solid #3498db; /* Blue border */
+            padding: 15px; /* More padding */
+            margin-bottom: 20px;
             cursor: grab;
             position: absolute;
-            width: 250px;
-            transition: top 0.5s ease; /* Smooth animation */
-            left: 0; /* Initial horizontal position */
+            width: calc(100% - 60px); /* Adjust width based on padding */
+            left: 30px; /* Align with year */
+            transition: top 0.5s ease;
+            border-radius: 8px; /* Rounded corners */
+            box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            z-index: 2;
         }
         .event-box:active{
             cursor: grabbing;
+              z-index: 3; /* Bring to front while dragging */
         }
-
+        .event-box p:first-child {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #3498db; /* Blue year text */
+            width: 45px;
+            float: left;
+            margin-left: -65px;
+        }
+        .event-box p:nth-child(2){
+            margin:0;
+        }
+        .hidden-date{
+            visibility: hidden;
+        }
         #holding-area {
-            background-color: lightgray;
-            padding: 10px;
-            margin-bottom: 20px;
-            width: 250px;
-            margin-left: auto;
-            margin-right: auto;
+            background-color: #ddd; /* Darker gray for holding area */
+            padding: 20px;
+            margin-bottom: 30px;
+            width: 300px;
             text-align: center;
-
+            border-radius: 8px;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        #holding-area .event-box {
+            position: static; /* Remove absolute positioning */
+            margin-bottom: 0; /* Remove bottom margin */
+            width: calc(100% - 30px); /* Adjusted based on holding area padding*/
         }
 
         #score {
             font-size: 1.5em;
-            margin-bottom: 10px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #3498db;
             text-align: center;
         }
-        .shake {
-          animation: shake 0.5s;
+         #instructions{
+            text-align: center;
+            margin-bottom: 15px;
+            font-style: italic;
+            color: #555;
         }
 
-        @keyframes shake {
-          0% { transform: translate(1px, 1px) rotate(0deg); }
-          10% { transform: translate(-1px, -2px) rotate(-1deg); }
-          20% { transform: translate(-3px, 0px) rotate(1deg); }
-          30% { transform: translate(3px, 2px) rotate(0deg); }
-          40% { transform: translate(1px, -1px) rotate(1deg); }
-          50% { transform: translate(-1px, 2px) rotate(-1deg); }
-          60% { transform: translate(-3px, 1px) rotate(0deg); }
-          70% { transform: translate(3px, 1px) rotate(-1deg); }
-          80% { transform: translate(-1px, -1px) rotate(1deg); }
-          90% { transform: translate(1px, 2px) rotate(0deg); }
-          100% { transform: translate(1px, -2px) rotate(-1deg); }
+         /* Present/Past Labels */
+        #present-label {
+            position: absolute;
+            top: 0;
+            left: -50px;
+            font-weight: bold;
+            color: #3498db;
         }
-        .hidden-date {
-            visibility: hidden;
+
+        #past-label {
+            position: absolute;
+            bottom: 0;
+            left: -40px;
+            font-weight: bold;
+            color: #3498db;
         }
+        .shake {
+            animation: shake 0.5s;
+          }
+
+          @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+          }
     </style>
 </head>
 <body>
-    <div id="score">Score: 0</div>
-    <div id="holding-area">
-        <div class="event-box" id="current-event" draggable="true">
-             </div>
-    </div>
-    <div id="timeline-container">
-         <div class="event-box" id="event-columbus" data-date="1492">
-            <p>1492</p>
-            <p>Christopher Columbus sailed across the Atlantic Ocean...</p>
+    <div id = "game-container">
+        <div id="score">Score: 0</div>
+        <div id="instructions">MOVE WITH FINGER • TAP TO PLACE</div>
+        <div id="holding-area">
+            <div class="event-box" id="current-event" draggable="true">
+            </div>
+        </div>
+        <div id="timeline-container">
+            <div id="present-label">PRESENT</div>
+            <div class="event-box" id="event-columbus" data-date="1492">
+                <p>1492</p>
+                <p>Christopher Columbus sailed across the Atlantic Ocean...</p>
+            </div>
+            <div id="past-label">PAST</div>
         </div>
     </div>
-
     <script>
-        let currentScore = 0;
+    // --- (JavaScript Code - Almost Identical to Previous Version) ---
+    // Only minor changes needed, mostly related to spacing calculations
+    // due to the different styling.
+    let currentScore = 0;
         let currentEventIndex = 0;
         let draggedElement = null;
 
@@ -116,7 +175,7 @@
                 return parseInt(b.dataset.date) - parseInt(a.dataset.date);
             });
             let topPosition = 20; // Start position for the first element
-            const boxHeight = 110; //calculate the space between dates.
+            const boxHeight = 130; //calculate the space between dates.
 
             timelineEvents.forEach((event) => {
 
@@ -137,7 +196,6 @@
                 currentEventBox.innerHTML = `
                     <p class = "hidden-date">${nextEvent.date}</p>
                     <p>${nextEvent.description}</p>
-                    <p>MOVE WITH FINGER • TAP TO PLACE</p>
                 `;
                 currentEventBox.style.top = "0px"; // Reset position in holding area
                 currentEventBox.style.left = "0px"; // Reset position
@@ -199,7 +257,7 @@
             allEvents.sort((a,b) => parseInt(b.dataset.date) - parseInt(a.dataset.date));
 
             let topPosition = 20;
-            const boxHeight = 110; // Keep consistent with initial placement
+            const boxHeight = 130; // Keep consistent with initial placement
 
              // Update positions *without* actually changing the DOM (yet)
             allEvents.forEach(eventBox => {
@@ -274,7 +332,6 @@
 
         // Initial setup
         loadNextEvent();
-
-    </script>
+</script>
 </body>
 </html>
