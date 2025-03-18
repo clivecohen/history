@@ -1,14 +1,280 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flashback Stack</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Historical Timeline Game</title>
+    <style>
+        body {
+            font-family: sans-serif;
+        }
+
+        #timeline-container {
+            width: 80%;
+            margin: 0 auto;
+            position: relative;
+            border-left: 5px solid black;
+            padding-left: 20px;
+            min-height: 500px; /* Ensure enough space for movement */
+        }
+
+        .event-box {
+            background-color: lightblue;
+            border: 1px solid darkblue;
+            padding: 10px;
+            margin-bottom: 10px;
+            cursor: grab;
+            position: absolute;
+            width: 250px;
+            transition: top 0.5s ease; /* Smooth animation */
+            left: 0; /* Initial horizontal position */
+        }
+        .event-box:active{
+            cursor: grabbing;
+        }
+
+        #holding-area {
+            background-color: lightgray;
+            padding: 10px;
+            margin-bottom: 20px;
+            width: 250px;
+            margin-left: auto;
+            margin-right: auto;
+            text-align: center;
+
+        }
+
+        #score {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .shake {
+          animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+          0% { transform: translate(1px, 1px) rotate(0deg); }
+          10% { transform: translate(-1px, -2px) rotate(-1deg); }
+          20% { transform: translate(-3px, 0px) rotate(1deg); }
+          30% { transform: translate(3px, 2px) rotate(0deg); }
+          40% { transform: translate(1px, -1px) rotate(1deg); }
+          50% { transform: translate(-1px, 2px) rotate(-1deg); }
+          60% { transform: translate(-3px, 1px) rotate(0deg); }
+          70% { transform: translate(3px, 1px) rotate(-1deg); }
+          80% { transform: translate(-1px, -1px) rotate(1deg); }
+          90% { transform: translate(1px, 2px) rotate(0deg); }
+          100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+        .hidden-date {
+            visibility: hidden;
+        }
+    </style>
 </head>
 <body>
-    <div class="container" id="gameContainer"></div>
-    <div class="tap-button" id="tapButton">Tap</div>
-    <script src="script.js"></script>
+    <div id="score">Score: 0</div>
+    <div id="holding-area">
+        <div class="event-box" id="current-event" draggable="true">
+             </div>
+    </div>
+    <div id="timeline-container">
+         <div class="event-box" id="event-columbus" data-date="1492">
+            <p>1492</p>
+            <p>Christopher Columbus sailed across the Atlantic Ocean...</p>
+        </div>
+    </div>
+
+    <script>
+        let currentScore = 0;
+        let currentEventIndex = 0;
+        let draggedElement = null;
+
+        const events = [
+            { id: "event-wright", date: "1903", description: "The Wright Brothers achieved the first powered airplane flight..." },
+            { id: "event-armstrong", date: "1969", description: "Astronaut Neil Armstrong became the first person to walk on the Moon..." },
+            { id: "event-magna-carta", date: "1215", description: "King John of England agreed to the Magna Carta..." },
+             { id: "event-columbus", date: "1492", description: "Christopher Columbus sailed across the Atlantic Ocean..." }, // Added for consistency
+        ];
+
+        // Remove the columbus event, as this is now placed by default.
+        const availableEvents = events.filter(event => event.id !== "event-columbus");
+
+        const scoreDisplay = document.getElementById("score");
+        const holdingArea = document.getElementById("holding-area");
+        const currentEventBox = document.getElementById("current-event");
+        const timelineContainer = document.getElementById("timeline-container");
+
+        // Function to update the score display
+        function updateScore(points) {
+            currentScore += points;
+            scoreDisplay.textContent = `Score: ${currentScore}`;
+        }
+        // Function to place an event box in its correct position
+        function placeEventInTimeline(eventBox) {
+            const timelineEvents = Array.from(timelineContainer.querySelectorAll(".event-box"));
+            timelineEvents.push(eventBox); // Include the new box in the sorting
+
+            timelineEvents.sort((a, b) => {
+                return parseInt(b.dataset.date) - parseInt(a.dataset.date);
+            });
+            let topPosition = 20; // Start position for the first element
+            const boxHeight = 110; //calculate the space between dates.
+
+            timelineEvents.forEach((event) => {
+
+                timelineContainer.appendChild(event); // Re-append to ensure correct order in DOM.
+                event.style.top = `${topPosition}px`;
+                topPosition += boxHeight;  // Increment for next box
+                 if(event.querySelector(".hidden-date")){
+                        event.querySelector(".hidden-date").classList.remove("hidden-date");
+                 }
+            });
+        }
+
+        // Function to get the next event and display it in the holding area
+        function loadNextEvent() {
+            if (currentEventIndex < availableEvents.length) {
+                const nextEvent = availableEvents[currentEventIndex];
+                currentEventBox.dataset.date = nextEvent.date;
+                currentEventBox.innerHTML = `
+                    <p class = "hidden-date">${nextEvent.date}</p>
+                    <p>${nextEvent.description}</p>
+                    <p>MOVE WITH FINGER • TAP TO PLACE</p>
+                `;
+                currentEventBox.style.top = "0px"; // Reset position in holding area
+                currentEventBox.style.left = "0px"; // Reset position
+                currentEventBox.setAttribute("draggable", "true"); // Make draggable again
+                currentEventIndex++;
+            } else {
+                // Game Over - all events have been placed
+                holdingArea.innerHTML = "<p>Game Over!  Final Score: " + currentScore + "</p>";
+                currentEventBox.style.display = "none"; // Hide the draggable box
+            }
+        }
+
+        // --- Drag and Drop Event Handlers ---
+
+        currentEventBox.addEventListener("dragstart", (event) => {
+            draggedElement = event.target;
+              event.dataTransfer.setData("text/plain", event.target.id); // Good practice for drag and drop.
+            event.target.classList.add("dragging"); // Optional styling class
+
+        });
+        // Use a small delay so it doesn't prevent the drop event
+        currentEventBox.addEventListener("dragend", (event) => {
+            setTimeout(()=>{ event.target.classList.remove("dragging");}, 50)
+
+        });
+
+        timelineContainer.addEventListener("dragover", (event) => {
+            event.preventDefault(); // Allow the drop
+
+             // --- Live Preview ---
+            const timelineEvents = Array.from(timelineContainer.querySelectorAll(".event-box"));
+            //create an array with the events that are currently on the timeline, *including* the dragged one.
+            const allEvents = [...timelineEvents, draggedElement];
+
+            //1 - convert clientY to relative position to the container.
+            const mouseY = event.clientY - timelineContainer.getBoundingClientRect().top;
+
+            //2 - Find insertion point
+            let insertBefore = null;
+            for(let i=0; i< timelineEvents.length; i++){
+                const eventBox = timelineEvents[i];
+                const eventTop = parseInt(eventBox.style.top);
+
+                if(mouseY < eventTop){
+                    insertBefore = eventBox;
+                    break;
+                }
+            }
+
+            //3 - Temporarily insert the dragged element into the array at the correct position
+            if(insertBefore){
+                const insertIndex = allEvents.indexOf(insertBefore);
+                allEvents.splice(insertIndex, 0, draggedElement);
+                allEvents.splice(allEvents.lastIndexOf(draggedElement),1);
+            } else {
+                 allEvents.push(draggedElement); //at the bottom
+            }
+             //Sort (temporarily) all events including dragged one, to get the correct order.
+            allEvents.sort((a,b) => parseInt(b.dataset.date) - parseInt(a.dataset.date));
+
+            let topPosition = 20;
+            const boxHeight = 110; // Keep consistent with initial placement
+
+             // Update positions *without* actually changing the DOM (yet)
+            allEvents.forEach(eventBox => {
+                eventBox.style.top = `${topPosition}px`;
+                topPosition += boxHeight;
+            });
+        });
+
+        timelineContainer.addEventListener("drop", (event) => {
+            event.preventDefault();
+            if (!draggedElement) return;
+            // --- Check for Correct Placement ---
+            const timelineEvents = Array.from(timelineContainer.querySelectorAll(".event-box"));
+            const allEvents = [...timelineEvents, draggedElement];
+
+            //1 - convert clientY to relative position to the container.
+            const mouseY = event.clientY - timelineContainer.getBoundingClientRect().top;
+
+            //2 - Find insertion point
+            let insertBefore = null;
+            for(let i=0; i< timelineEvents.length; i++){
+                const eventBox = timelineEvents[i];
+                const eventTop = parseInt(eventBox.style.top);
+
+                if(mouseY < eventTop){
+                    insertBefore = eventBox;
+                    break;
+                }
+            }
+
+            //3 - Temporarily insert the dragged element into the array at the correct position
+            if(insertBefore){
+                const insertIndex = allEvents.indexOf(insertBefore);
+                allEvents.splice(insertIndex, 0, draggedElement);
+                allEvents.splice(allEvents.lastIndexOf(draggedElement),1);
+            } else {
+                 allEvents.push(draggedElement); //at the bottom
+            }
+
+             //Sort all events including dragged one, to get the correct order.
+            allEvents.sort((a,b) => parseInt(b.dataset.date) - parseInt(a.dataset.date));
+
+             // Check if dragged element is in the correct position in the *sorted* array.
+            const correctIndex = allEvents.indexOf(draggedElement);
+
+            //get the position it was dropped at:
+            let droppedAtIndex = -1;
+            if(insertBefore){
+              droppedAtIndex = timelineEvents.indexOf(insertBefore);
+            } else {
+                droppedAtIndex = timelineEvents.length;
+            }
+            // Check if the position is correct (after dropping)
+            const isCorrect = droppedAtIndex === correctIndex;
+
+            if (isCorrect) {
+                updateScore(100);
+            } else {
+                //add shake effect
+                 draggedElement.classList.add("shake");
+                setTimeout(() => {
+                    draggedElement.classList.remove("shake");
+                }, 500);
+            }
+
+            // Move the element to the timeline (permanently).  Place in correct position.
+            timelineContainer.appendChild(draggedElement);
+            placeEventInTimeline(draggedElement);
+            draggedElement = null; // Reset for the next drag
+            loadNextEvent(); // Load the next event
+        });
+
+        // Initial setup
+        loadNextEvent();
+
+    </script>
 </body>
 </html>
