@@ -29,20 +29,21 @@
             background-color: #ecf0f1;
             border: 2px solid #3498db;
             padding: 15px;
-            margin-bottom: 20px;
+            margin-bottom: 20px; /* Added for visual spacing */
             cursor: grab;
             position: absolute;
-            width: calc(100% - 60px);
-            left: 30px;
+            width: calc(100% - 60px); /* Adjust for padding and border */
+            left: 30px; /* Consistent left positioning */
             transition: top 0.5s ease; /* Smooth animation */
             border-radius: 8px;
             box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
             z-index: 2;
         }
-        .event-box:active{
+        .event-box:active {
             cursor: grabbing;
-              z-index: 3; /* Bring to front while dragging */
+            z-index: 3; /* Bring to front while dragging */
         }
+
         .event-box p:first-child {
             font-weight: bold;
             margin-bottom: 5px;
@@ -50,13 +51,16 @@
             width: 45px;
             float: left;
             margin-left: -65px;
+
         }
-        .event-box p:nth-child(2){
+         .event-box p:nth-child(2){
             margin:0;
         }
-        .hidden-date{
+
+        .hidden-date {
             visibility: hidden;
         }
+
         #holding-area {
             background-color: #ddd;
             padding: 20px;
@@ -66,10 +70,11 @@
             border-radius: 8px;
             box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
         }
+
         #holding-area .event-box {
-            position: static;
-            margin-bottom: 0;
-            width: calc(100% - 30px);
+            position: static; /* No absolute positioning */
+            margin-bottom: 0; /* No extra margin */
+            width: calc(100% - 40px); /* Adjust for padding */
         }
 
         #score {
@@ -79,18 +84,18 @@
             color: #3498db;
             text-align: center;
         }
-         #instructions{
+        #instructions{
             text-align: center;
             margin-bottom: 15px;
             font-style: italic;
             color: #555;
-             visibility: hidden;
+            visibility: hidden;
         }
 
-         /* Present/Past Labels */
+        /* Present/Past Labels */
         #present-label {
             position: absolute;
-            top: 0;
+            top: 20px; /* Position relative to timeline */
             left: -50px;
             font-weight: bold;
             color: #3498db;
@@ -98,16 +103,17 @@
 
         #past-label {
             position: absolute;
-            bottom: 0;
+            bottom: 20px; /* Position relative to timeline */
             left: -40px;
             font-weight: bold;
             color: #3498db;
         }
+
         .shake {
             animation: shake 0.5s;
-          }
+        }
 
-          @keyframes shake {
+        @keyframes shake {
             0% { transform: translate(1px, 1px) rotate(0deg); }
             10% { transform: translate(-1px, -2px) rotate(-1deg); }
             20% { transform: translate(-3px, 0px) rotate(1deg); }
@@ -119,187 +125,153 @@
             80% { transform: translate(-1px, -1px) rotate(1deg); }
             90% { transform: translate(1px, 2px) rotate(0deg); }
             100% { transform: translate(1px, -2px) rotate(-1deg); }
-          }
+        }
     </style>
 </head>
 <body>
-    <div id = "game-container">
+    <div id="game-container">
         <div id="score">Score: 0</div>
         <div id="instructions">MOVE WITH FINGER • TAP TO PLACE</div>
         <div id="holding-area">
-            <div class="event-box" id="current-event" draggable="true">
-            </div>
+            <div class="event-box" id="current-event" draggable="true"></div>
         </div>
         <div id="timeline-container">
             <div id="present-label">PRESENT</div>
-            <div class="event-box" id="event-columbus" data-date="1492">
-                <p>1492</p>
-                <p>Christopher Columbus sailed across the Atlantic Ocean...</p>
-            </div>
             <div id="past-label">PAST</div>
         </div>
     </div>
+
     <script>
-    let currentScore = 0;
-    let currentEventIndex = 0;
-    let draggedElement = null;
-    const boxHeight = 80; // Consistent box height
+    document.addEventListener('DOMContentLoaded', () => { // Use DOMContentLoaded
 
-    const events = [
-        { id: "event-wright", date: "1903", description: "The Wright Brothers achieved the first powered airplane flight..." },
-        { id: "event-armstrong", date: "1969", description: "Astronaut Neil Armstrong became the first person to walk on the Moon..." },
-        { id: "event-magna-carta", date: "1215", description: "King John of England agreed to the Magna Carta..." },
-        { id: "event-columbus", date: "1492", description: "Christopher Columbus sailed across the Atlantic Ocean..." }, //Included
-    ];
+        let currentScore = 0;
+        let currentEventIndex = 0;
+        let draggedElement = null;
+        const boxHeight = 85; // Measured box height + margin
 
-    // IMPORTANT: Use the *full* events array now, including Columbus.
-    const availableEvents = events.filter(event => event.id !== "event-columbus");
-    const instructions = document.getElementById("instructions");
-    const scoreDisplay = document.getElementById("score");
-    const holdingArea = document.getElementById("holding-area");
-    const currentEventBox = document.getElementById("current-event");
-    const timelineContainer = document.getElementById("timeline-container");
-    const initialBox = document.getElementById("event-columbus"); // Get initial box
+        const events = [
+            { id: "event-wright", date: "1903", description: "The Wright Brothers achieved the first powered airplane flight..." },
+            { id: "event-armstrong", date: "1969", description: "Astronaut Neil Armstrong became the first person to walk on the Moon..." },
+            { id: "event-magna-carta", date: "1215", description: "King John of England agreed to the Magna Carta..." },
+            { id: "event-columbus", date: "1492", description: "Christopher Columbus sailed across the Atlantic Ocean..." },
+        ];
 
-    function updateScore(points) {
-        currentScore += points;
-        scoreDisplay.textContent = `Score: ${currentScore}`;
-    }
+        const scoreDisplay = document.getElementById("score");
+        const holdingArea = document.getElementById("holding-area");
+        const currentEventBox = document.getElementById("current-event");
+        const timelineContainer = document.getElementById("timeline-container");
+        const instructions = document.getElementById("instructions");
 
-    //  placeEventInTimeline function.
-    function placeEventInTimeline() {
-		const timelineEvents = Array.from(timelineContainer.querySelectorAll(".event-box"));
-
-		timelineEvents.sort((a, b) => parseInt(b.dataset.date) - parseInt(a.dataset.date));
-
-		let topPosition = 20;
-
-		timelineEvents.forEach(event => {
-            //CRITICAL:  Append *before* setting the style.
-            timelineContainer.appendChild(event);
-			event.style.top = `${topPosition}px`;
-			topPosition += boxHeight;
-            //Correctly reveal the date.
-			if (event.querySelector(".hidden-date")) {
-				event.querySelector(".hidden-date").classList.remove("hidden-date");
-			}
-		});
-	}
-
-
-    function loadNextEvent() {
-        if (currentEventIndex < availableEvents.length) {
-            const nextEvent = availableEvents[currentEventIndex];
-            currentEventBox.dataset.date = nextEvent.date;
-            currentEventBox.innerHTML = `
-                <p class="hidden-date">${nextEvent.date}</p>
-                <p>${nextEvent.description}</p>
-                <p>MOVE WITH FINGER • TAP TO PLACE</p>  `;
-            currentEventBox.style.top = "0px"; // Reset
-            currentEventBox.style.left = "0px"; // Reset
-            currentEventBox.setAttribute("draggable", "true");
-            currentEventIndex++;
-        } else {
-             //Correctly handle game over.
-            holdingArea.innerHTML = "<p>Game Over! Final Score: " + currentScore + "</p>";
-            currentEventBox.remove(); //better than display:none
+        function updateScore(points) {
+            currentScore += points;
+            scoreDisplay.textContent = `Score: ${currentScore}`;
         }
-    }
 
-    currentEventBox.addEventListener("dragstart", (event) => {
-        draggedElement = event.target;
-        event.dataTransfer.setData("text/plain", event.target.id);
-        event.target.classList.add("dragging");
-        instructions.style.visibility = 'hidden';
-    });
+        function placeEventInTimeline() {
+            const timelineEvents = Array.from(timelineContainer.querySelectorAll(".event-box"));
+            timelineEvents.sort((a, b) => parseInt(b.dataset.date) - parseInt(a.dataset.date));
 
-    currentEventBox.addEventListener("dragend", (event) => {
-        // No changes needed here, the timeout is fine.
-        setTimeout(()=>{ event.target.classList.remove("dragging");}, 50)
-    });
+            const fragment = document.createDocumentFragment(); // Use a DocumentFragment
+            let topPosition = 20;
 
-    timelineContainer.addEventListener("dragover", (event) => {
-        event.preventDefault();
-        if (!draggedElement) return;
+            timelineEvents.forEach(eventBox => {
+                eventBox.style.top = `${topPosition}px`;
+                topPosition += boxHeight;
+                if (eventBox.querySelector(".hidden-date")) {
+                    eventBox.querySelector(".hidden-date").classList.remove("hidden-date");
+                }
+                fragment.appendChild(eventBox); // Append to the fragment
+            });
 
-        const mouseY = event.clientY - timelineContainer.getBoundingClientRect().top;
-        const timelineEvents = Array.from(timelineContainer.querySelectorAll(".event-box"));
+            timelineContainer.appendChild(fragment); // Append the fragment to the container
+        }
 
-        // 1. Find Insertion Point (Corrected Logic)
-        let insertBeforeIndex = -1;
-        for (let i = 0; i < timelineEvents.length; i++) {
-            if (mouseY < parseInt(timelineEvents[i].style.top) + boxHeight / 2) {
-                insertBeforeIndex = i;
-                break;
+        function loadNextEvent() {
+            if (currentEventIndex < events.length) {
+                const nextEvent = events[currentEventIndex];
+                currentEventBox.dataset.date = nextEvent.date;
+                currentEventBox.innerHTML = `
+                    <p class="hidden-date">${nextEvent.date}</p>
+                    <p>${nextEvent.description}</p>
+                    <p>MOVE WITH FINGER • TAP TO PLACE</p>
+                `;
+                currentEventBox.setAttribute("draggable", "true");
+                currentEventIndex++;
+            } else {
+                holdingArea.innerHTML = `<p>Game Over! Final Score: ${currentScore}</p>`;
+                currentEventBox.remove();
             }
         }
-        if (insertBeforeIndex === -1) {
-            insertBeforeIndex = timelineEvents.length; // Append at the end
-        }
 
-        // 2. Create Temporary Array and Insert
-        const tempEvents = [...timelineEvents]; // Create a *copy*
-        tempEvents.splice(insertBeforeIndex, 0, draggedElement);
 
-        // 3. Sort Temporary Array
-        tempEvents.sort((a, b) => parseInt(b.dataset.date) - parseInt(a.dataset.date));
-
-        // 4. Update Positions for Preview (Corrected)
-        let topPosition = 20;
-        tempEvents.forEach(eventBox => {
-            eventBox.style.top = `${topPosition}px`;
-            topPosition += boxHeight;
+        currentEventBox.addEventListener("dragstart", (event) => {
+            draggedElement = event.target;
+            event.dataTransfer.setData("text/plain", event.target.id);
+             instructions.style.visibility = 'hidden';
         });
-    });
 
-    timelineContainer.addEventListener("drop", (event) => {
-    event.preventDefault();
-    if (!draggedElement) return;
+        // Simplified dragover:  ONLY prevent default.
+        timelineContainer.addEventListener("dragover", (event) => {
+            event.preventDefault();
+        });
 
-    const timelineEvents = Array.from(timelineContainer.querySelectorAll(".event-box"));
-    const mouseY = event.clientY - timelineContainer.getBoundingClientRect().top;
+        timelineContainer.addEventListener("drop", (event) => {
+            event.preventDefault();
+            if (!draggedElement) return;
 
-    // --- Find Insertion Point (Corrected Logic) ---
-    let insertBeforeIndex = -1;
-    for (let i = 0; i < timelineEvents.length; i++) {
-        if (mouseY < parseInt(timelineEvents[i].style.top) + boxHeight / 2) {
-            insertBeforeIndex = i;
-            break;
-        }
-    }
-    if (insertBeforeIndex === -1) {
-        insertBeforeIndex = timelineEvents.length; // Append at the end
-    }
+            const timelineEvents = Array.from(timelineContainer.querySelectorAll(".event-box"));
+            const mouseY = event.clientY - timelineContainer.getBoundingClientRect().top;
 
-    // --- Create Temporary Array, Insert, and Sort ---
-    const tempEvents = [...timelineEvents]; // *Copy* of the array
-    tempEvents.splice(insertBeforeIndex, 0, draggedElement);
-    tempEvents.sort((a, b) => parseInt(b.dataset.date) - parseInt(a.dataset.date));
+            // Find insertion index *at the time of drop*
+            let insertBeforeIndex = timelineEvents.findIndex(eventBox => {
+                return mouseY < parseInt(eventBox.style.top) + boxHeight / 2;
+            });
 
-    // --- Check for Correctness ---
-    const correctIndex = tempEvents.indexOf(draggedElement);
-    const isCorrect = insertBeforeIndex === correctIndex; // Much simpler check
+            if (insertBeforeIndex === -1) {
+                insertBeforeIndex = timelineEvents.length; // Append at the end
+            }
 
-    // --- Update Score ---
-    if (isCorrect) {
-        updateScore(100);
-    } else {
-        draggedElement.classList.add("shake");  // Add shake effect
-        setTimeout(() => {
-            draggedElement.classList.remove("shake");
-        }, 500);
-    }
+            // Create temporary array, insert, and sort
+            const tempEvents = [...timelineEvents];
+            tempEvents.splice(insertBeforeIndex, 0, draggedElement);
+            tempEvents.sort((a, b) => parseInt(b.dataset.date) - parseInt(a.dataset.date));
 
-    // --- Modify the DOM *After* Scoring ---
-    timelineContainer.appendChild(draggedElement); // Add to the timeline
-    placeEventInTimeline();  // Reposition *all*
-    draggedElement = null;  // Reset
-    loadNextEvent();        // Load next event
-});
+            // Check for correctness
+            const correctIndex = tempEvents.indexOf(draggedElement);
+            const isCorrect = insertBeforeIndex === correctIndex;
 
-    // --- Initial Setup (Corrected) ---
-    placeEventInTimeline(); // Initial placement of Columbus
-    loadNextEvent(); // Load the first event
+            if (isCorrect) {
+                updateScore(100);
+            } else {
+                 draggedElement.classList.add("shake");  // Add shake effect
+                setTimeout(() => {
+                    draggedElement.classList.remove("shake");
+                }, 500);
+            }
+
+            // Modify DOM *after* scoring:
+            timelineContainer.appendChild(draggedElement);
+            placeEventInTimeline(); // Reposition *all*
+            draggedElement = null; // Reset
+            loadNextEvent(); // Load next event
+        });
+
+        // --- Initial Setup (in DOMContentLoaded) ---
+        events.forEach(event => {
+            if (event.id !== "current-event") { // Don't create a box for the holding area placeholder
+                const eventBox = document.createElement("div");
+                eventBox.classList.add("event-box");
+                eventBox.id = event.id;
+                eventBox.dataset.date = event.date;
+                eventBox.innerHTML = `<p>${event.date}</p><p>${event.description}</p>`;
+                timelineContainer.appendChild(eventBox);
+            }
+        });
+
+        placeEventInTimeline();  // Initial placement of ALL boxes
+        loadNextEvent(); // Load the first event
+
+    }); // End of DOMContentLoaded
 
     </script>
 </body>
