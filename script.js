@@ -1,4 +1,18 @@
 document.addEventListener('DOMContentLoaded', () => {
+  // Add debug logging function for mobile troubleshooting
+  if (typeof debugLog !== 'function') {
+    window.debugLog = function(message) {
+      console.log(message);
+      // If debugging div exists, use it (added in HTML)
+      const debugInfo = document.getElementById('debug-info');
+      if (debugInfo) {
+        debugInfo.style.display = 'block';
+        const timestamp = new Date().toLocaleTimeString();
+        debugInfo.innerHTML = `${timestamp}: ${message}<br>` + debugInfo.innerHTML.substring(0, 500);
+      }
+    };
+  }
+  
   // Game variables
   const sourceContainer = document.getElementById('source-container');
   const timelineContainer = document.getElementById('timeline-container');
@@ -281,21 +295,65 @@ document.addEventListener('DOMContentLoaded', () => {
   function addTapToPlaceButton(item) {
     // Only add if it doesn't already have one
     if (!item.querySelector('.tap-button')) {
+      debugLog("Adding TAP TO PLACE button");
+      
       const tapButton = document.createElement('div');
       tapButton.className = 'tap-button';
       tapButton.textContent = 'TAP TO PLACE';
       
-      tapButton.addEventListener('click', (e) => {
+      // Ensure the button is properly styled
+      tapButton.style.position = 'absolute';
+      tapButton.style.right = '0';
+      tapButton.style.top = '50%';
+      tapButton.style.transform = 'translateY(-50%)';
+      tapButton.style.zIndex = '100';
+      tapButton.style.opacity = '1';
+      tapButton.style.visibility = 'visible';
+      
+      // Use both click and touchend events for better mobile compatibility
+      const handleTap = (e) => {
+        e.preventDefault();
         e.stopPropagation(); // Prevent event bubbling
-        finalizeItemPlacement(item);
-      });
+        debugLog("TAP TO PLACE button tapped");
+        
+        // Immediate visual feedback
+        tapButton.style.backgroundColor = '#4CAF50';
+        
+        // Fix the iOS 300ms delay by using setTimeout
+        setTimeout(() => {
+          finalizeItemPlacement(item);
+        }, 10);
+      };
+      
+      tapButton.addEventListener('click', handleTap);
+      tapButton.addEventListener('touchend', handleTap);
       
       item.appendChild(tapButton);
+      
+      // Make sure the button is visible
+      setTimeout(() => {
+        tapButton.style.opacity = '1';
+        tapButton.style.visibility = 'visible';
+      }, 50);
     }
   }
 
   // Handle finalizing the placement of an item
   function finalizeItemPlacement(item) {
+    console.log("Finalizing placement of item:", item);
+    
+    // Safety checks
+    if (!item || !item.parentNode) {
+      console.error("Invalid item or item not in DOM");
+      return;
+    }
+    
+    // Make sure item is in the timeline
+    if (!timelineContainer.contains(item)) {
+      console.error("Item not in timeline container");
+      return;
+    }
+    
     // Remove the timeline-item class which enabled the tap button
     item.classList.remove('timeline-item');
     
@@ -305,25 +363,27 @@ document.addEventListener('DOMContentLoaded', () => {
       tapButton.remove();
     }
     
+    // Force a reflow to ensure all styles are applied
+    void item.offsetWidth;
+    
     // Get the current position in the timeline
     const timelineItems = [...timelineContainer.querySelectorAll('.item')];
     const placedIndex = timelineItems.indexOf(item);
     
+    if (placedIndex === -1) {
+      console.error("Item not found in timeline items collection");
+      return;
+    }
+    
     // Find the correct position for this item
     const yearToCheck = parseInt(item.dataset.year);
     let isCorrect = false;
-    let correctIndex = -1;
     
-    // Determine if placement is correct and find the correct index
+    // Determine if placement is correct
     if (timelineItems.length === 1) {
       // If it's the only item, it's correct
       isCorrect = true;
     } else {
-      // Get all years to determine correct position
-      const allYears = timelineItems.map(i => parseInt(i.dataset.year));
-      allYears.sort((a, b) => a - b);
-      correctIndex = allYears.indexOf(yearToCheck);
-      
       // Check if the current position is correct
       if (placedIndex === 0) {
         // If it's at the beginning, check if it's before the next item
@@ -341,6 +401,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
     
+    console.log("Item placed correctly?", isCorrect);
+    
     // Mark the item as placed and disable dragging
     item.classList.add('placed');
     item.draggable = false;
@@ -355,46 +417,26 @@ document.addEventListener('DOMContentLoaded', () => {
     item.style.zIndex = '';
     item.style.webkitTransform = '';
     
-    // Make sure the item stays in the timeline
-    if (!timelineContainer.contains(item)) {
-      console.warn("Item not in timeline container when finalizing placement");
-      
-      // Determine where to place it
-      const existingItems = [...timelineContainer.querySelectorAll('.item')];
-      
-      if (existingItems.length === 0) {
-        timelineContainer.appendChild(item);
-      } else {
-        // Find the right position based on year
-        let inserted = false;
-        for (let i = 0; i < existingItems.length; i++) {
-          if (parseInt(existingItems[i].dataset.year) > yearToCheck) {
-            timelineContainer.insertBefore(item, existingItems[i]);
-            inserted = true;
-            break;
-          }
-        }
-        
-        if (!inserted) {
-          timelineContainer.appendChild(item);
-        }
-      }
-    }
+    // Force another reflow for Safari
+    void item.offsetWidth;
     
     // Update score and display feedback
     if (isCorrect) {
       score += 100;
       updateScore();
-      showFeedback('Correct! +100 points', 'correct');
       
       // Replace the text with full version including bold year
       item.innerHTML = item.dataset.fullText;
       // Ensure the color is preserved
       item.style.backgroundColor = item.dataset.color;
       
+      // Show feedback message
+      showFeedback('Correct! +100 points', 'correct');
+      
       // Add fireworks animation
       createFireworks(item);
     } else {
+      // Show feedback message
       showFeedback('Incorrect placement! No points', 'incorrect');
       
       // Show full text
@@ -410,6 +452,12 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 1000); // Small delay so user can see the animation
     }
     
+    // Apply any urgent style fixes to make sure item is visible
+    setTimeout(() => {
+      item.style.opacity = '1';
+      item.style.display = 'block';
+    }, 100);
+    
     // Check if this was the last item to be placed
     setTimeout(() => {
       checkGameCompletion();
@@ -418,6 +466,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Create fireworks animation around an item
   function createFireworks(item) {
+    debugLog("Creating fireworks animation");
+    
     // Create container for the fireworks
     const fireworksContainer = document.createElement('div');
     fireworksContainer.className = 'fireworks-container';
@@ -479,6 +529,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Create thumbs down animation for incorrect placement
   function createThumbsDown(item) {
+    debugLog("Creating thumbs down animation");
+    
     const thumbsDown = document.createElement('div');
     thumbsDown.className = 'thumbs-down';
     thumbsDown.innerHTML = '👎';
@@ -598,13 +650,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Show feedback briefly
   function showFeedback(message, className) {
+    debugLog("Showing feedback: " + message);
+    
     resultDisplay.textContent = message;
     resultDisplay.className = className;
     
+    // Ensure the feedback is visible
+    resultDisplay.style.display = 'block';
+    resultDisplay.style.opacity = '1';
+    
     // Clear after 2 seconds
     setTimeout(() => {
-      resultDisplay.textContent = '';
-      resultDisplay.className = '';
+      // Fade out slowly
+      resultDisplay.style.transition = 'opacity 0.5s';
+      resultDisplay.style.opacity = '0';
+      
+      // Then clear text
+      setTimeout(() => {
+        resultDisplay.textContent = '';
+        resultDisplay.className = '';
+        resultDisplay.style.transition = '';
+        resultDisplay.style.opacity = '1';
+      }, 500);
     }, 2000);
   }
 
