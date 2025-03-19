@@ -924,13 +924,11 @@ document.addEventListener('DOMContentLoaded', () => {
     isDraggingActive = false;
     stackedEvents = [];
     
-    // Select game mode (always use 'Show Years' for timeline items)
+    // Select game mode (no need to update instruction text since it's removed)
     currentMode = {
       name: 'Stack Game',
-      displayFormat: (event) => event.fullText,
-      instruction: 'Drag events from the stack and place them in chronological order. Get 100 points for correct placement!',
+      displayFormat: (event) => event.fullText
     };
-    document.getElementById('instruction').textContent = currentMode.instruction;
     
     // Add first event to the timeline container (the earliest one)
     const firstEvent = sortedEvents[0];
