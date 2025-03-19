@@ -1,17 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // Add debug logging function for mobile troubleshooting
-  if (typeof debugLog !== 'function') {
-    window.debugLog = function(message) {
-      console.log(message);
-      // If debugging div exists, use it (added in HTML)
-      const debugInfo = document.getElementById('debug-info');
-      if (debugInfo) {
-        debugInfo.style.display = 'block';
-        const timestamp = new Date().toLocaleTimeString();
-        debugInfo.innerHTML = `${timestamp}: ${message}<br>` + debugInfo.innerHTML.substring(0, 500);
-      }
-    };
-  }
+  // Redefine debugLog to only log to console
+  window.debugLog = function(message) {
+    // Only log to console, not to the screen
+    console.log(message);
+  };
   
   // Game variables
   const sourceContainer = document.getElementById('source-container');
