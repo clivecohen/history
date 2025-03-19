@@ -4,27 +4,50 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Historical Timeline Game</title>
+  <style>
+    /* Prevent iOS bouncing/scrolling effects */
+    html, body {
+      position: fixed;
+      overflow: hidden;
+      width: 100%;
+      height: 100%;
+      overscroll-behavior: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    #game-content {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+  </style>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Historical Timeline</h1>
-    <div class="score-container">
-      <div class="score-box">Score: <span id="score">0</span></div>
-    </div>
-    <p id="instruction">Drag events from the stack and place them in chronological order.</p>
-    <div id="game-container">
-      <div class="area-label">Event Stack (<span id="stack-count">4</span> remaining):</div>
-      <div id="source-container"></div>
-      <div class="area-label">Your Timeline:</div>
-      <div class="timeline-wrapper">
-        <div class="timeline-label past">PAST</div>
-        <div id="timeline-container"></div>
-        <div class="timeline-label present">PRESENT</div>
+  <div id="game-content">
+    <div class="container">
+      <h1>Historical Timeline</h1>
+      <div class="score-container">
+        <div class="score-box">Score: <span id="score">0</span></div>
       </div>
-      <div id="result"></div>
-      <div id="share-container" class="hidden">
-        <button id="share-button">Share Your Score!</button>
+      <p id="instruction">Drag events from the stack and place them in chronological order.</p>
+      <div id="game-container">
+        <div class="area-label">Event Stack (<span id="stack-count">4</span> remaining):</div>
+        <div id="source-container"></div>
+        <div class="area-label">Your Timeline:</div>
+        <div class="timeline-wrapper">
+          <div class="timeline-label past">PAST</div>
+          <div id="timeline-container"></div>
+          <div class="timeline-label present">PRESENT</div>
+        </div>
+        <div id="result"></div>
+        <div id="share-container" class="hidden">
+          <button id="share-button">Share Your Score!</button>
+        </div>
       </div>
     </div>
   </div>
