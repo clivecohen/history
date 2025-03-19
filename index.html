@@ -1,278 +1,33 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Historical Timeline Game</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            background-color: #f0f0f0;
-        }
-
-        #game-container {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-        }
-
-        #timeline-container {
-            width: 300px;
-            margin: 0 auto;
-            position: relative;
-            border-left: 5px solid #3498db;
-            padding-left: 30px;
-            min-height: 600px;
-            background-color: white;
-            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-        }
-
-        .event-box {
-            background-color: #ecf0f1;
-            border: 2px solid #3498db;
-            padding: 15px;
-            margin-bottom: 20px; /* Added for visual spacing */
-            cursor: grab;
-            position: absolute;
-            width: calc(100% - 60px); /* Adjust for padding and border */
-            left: 30px; /* Consistent left positioning */
-            transition: top 0.5s ease; /* Smooth animation */
-            border-radius: 8px;
-            box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
-            z-index: 2;
-        }
-        .event-box:active {
-            cursor: grabbing;
-            z-index: 3; /* Bring to front while dragging */
-        }
-
-        .event-box p:first-child {
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: #3498db;
-            width: 45px;
-            float: left;
-            margin-left: -65px;
-
-        }
-         .event-box p:nth-child(2){
-            margin:0;
-        }
-
-        .hidden-date {
-            visibility: hidden;
-        }
-
-        #holding-area {
-            background-color: #ddd;
-            padding: 20px;
-            margin-bottom: 30px;
-            width: 300px;
-            text-align: center;
-            border-radius: 8px;
-            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
-        }
-
-        #holding-area .event-box {
-            position: static; /* No absolute positioning */
-            margin-bottom: 0; /* No extra margin */
-            width: calc(100% - 40px); /* Adjust for padding */
-        }
-
-        #score {
-            font-size: 1.5em;
-            font-weight: bold;
-            margin-bottom: 20px;
-            color: #3498db;
-            text-align: center;
-        }
-        #instructions{
-            text-align: center;
-            margin-bottom: 15px;
-            font-style: italic;
-            color: #555;
-            visibility: hidden;
-        }
-
-        /* Present/Past Labels */
-        #present-label {
-            position: absolute;
-            top: 20px; /* Position relative to timeline */
-            left: -50px;
-            font-weight: bold;
-            color: #3498db;
-        }
-
-        #past-label {
-            position: absolute;
-            bottom: 20px; /* Position relative to timeline */
-            left: -40px;
-            font-weight: bold;
-            color: #3498db;
-        }
-
-        .shake {
-            animation: shake 0.5s;
-        }
-
-        @keyframes shake {
-            0% { transform: translate(1px, 1px) rotate(0deg); }
-            10% { transform: translate(-1px, -2px) rotate(-1deg); }
-            20% { transform: translate(-3px, 0px) rotate(1deg); }
-            30% { transform: translate(3px, 2px) rotate(0deg); }
-            40% { transform: translate(1px, -1px) rotate(1deg); }
-            50% { transform: translate(-1px, 2px) rotate(-1deg); }
-            60% { transform: translate(-3px, 1px) rotate(0deg); }
-            70% { transform: translate(3px, 1px) rotate(-1deg); }
-            80% { transform: translate(-1px, -1px) rotate(1deg); }
-            90% { transform: translate(1px, 2px) rotate(0deg); }
-            100% { transform: translate(1px, -2px) rotate(-1deg); }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Historical Timeline Game</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="game-container">
-        <div id="score">Score: 0</div>
-        <div id="instructions">MOVE WITH FINGER • TAP TO PLACE</div>
-        <div id="holding-area">
-            <div class="event-box" id="current-event" draggable="true"></div>
-        </div>
-        <div id="timeline-container">
-            <div id="present-label">PRESENT</div>
-            <div id="past-label">PAST</div>
-        </div>
+  <div class="container">
+    <h1>Historical Timeline</h1>
+    <div class="score-container">
+      <div class="score-box">Score: <span id="score">0</span></div>
     </div>
-
-    <script>
-    document.addEventListener('DOMContentLoaded', () => { // Use DOMContentLoaded
-
-        let currentScore = 0;
-        let currentEventIndex = 0;
-        let draggedElement = null;
-        const boxHeight = 85; // Measured box height + margin
-
-        const events = [
-            { id: "event-wright", date: "1903", description: "The Wright Brothers achieved the first powered airplane flight..." },
-            { id: "event-armstrong", date: "1969", description: "Astronaut Neil Armstrong became the first person to walk on the Moon..." },
-            { id: "event-magna-carta", date: "1215", description: "King John of England agreed to the Magna Carta..." },
-            { id: "event-columbus", date: "1492", description: "Christopher Columbus sailed across the Atlantic Ocean..." },
-        ];
-
-        const scoreDisplay = document.getElementById("score");
-        const holdingArea = document.getElementById("holding-area");
-        const currentEventBox = document.getElementById("current-event");
-        const timelineContainer = document.getElementById("timeline-container");
-        const instructions = document.getElementById("instructions");
-
-        function updateScore(points) {
-            currentScore += points;
-            scoreDisplay.textContent = `Score: ${currentScore}`;
-        }
-
-        function placeEventInTimeline() {
-            const timelineEvents = Array.from(timelineContainer.querySelectorAll(".event-box"));
-            timelineEvents.sort((a, b) => parseInt(b.dataset.date) - parseInt(a.dataset.date));
-
-            const fragment = document.createDocumentFragment(); // Use a DocumentFragment
-            let topPosition = 20;
-
-            timelineEvents.forEach(eventBox => {
-                eventBox.style.top = `${topPosition}px`;
-                topPosition += boxHeight;
-                if (eventBox.querySelector(".hidden-date")) {
-                    eventBox.querySelector(".hidden-date").classList.remove("hidden-date");
-                }
-                fragment.appendChild(eventBox); // Append to the fragment
-            });
-
-            timelineContainer.appendChild(fragment); // Append the fragment to the container
-        }
-
-        function loadNextEvent() {
-            if (currentEventIndex < events.length) {
-                const nextEvent = events[currentEventIndex];
-                currentEventBox.dataset.date = nextEvent.date;
-                currentEventBox.innerHTML = `
-                    <p class="hidden-date">${nextEvent.date}</p>
-                    <p>${nextEvent.description}</p>
-                    <p>MOVE WITH FINGER • TAP TO PLACE</p>
-                `;
-                currentEventBox.setAttribute("draggable", "true");
-                currentEventIndex++;
-            } else {
-                holdingArea.innerHTML = `<p>Game Over! Final Score: ${currentScore}</p>`;
-                currentEventBox.remove();
-            }
-        }
-
-
-        currentEventBox.addEventListener("dragstart", (event) => {
-            draggedElement = event.target;
-            event.dataTransfer.setData("text/plain", event.target.id);
-             instructions.style.visibility = 'hidden';
-        });
-
-        // Simplified dragover:  ONLY prevent default.
-        timelineContainer.addEventListener("dragover", (event) => {
-            event.preventDefault();
-        });
-
-        timelineContainer.addEventListener("drop", (event) => {
-            event.preventDefault();
-            if (!draggedElement) return;
-
-            const timelineEvents = Array.from(timelineContainer.querySelectorAll(".event-box"));
-            const mouseY = event.clientY - timelineContainer.getBoundingClientRect().top;
-
-            // Find insertion index *at the time of drop*
-            let insertBeforeIndex = timelineEvents.findIndex(eventBox => {
-                return mouseY < parseInt(eventBox.style.top) + boxHeight / 2;
-            });
-
-            if (insertBeforeIndex === -1) {
-                insertBeforeIndex = timelineEvents.length; // Append at the end
-            }
-
-            // Create temporary array, insert, and sort
-            const tempEvents = [...timelineEvents];
-            tempEvents.splice(insertBeforeIndex, 0, draggedElement);
-            tempEvents.sort((a, b) => parseInt(b.dataset.date) - parseInt(a.dataset.date));
-
-            // Check for correctness
-            const correctIndex = tempEvents.indexOf(draggedElement);
-            const isCorrect = insertBeforeIndex === correctIndex;
-
-            if (isCorrect) {
-                updateScore(100);
-            } else {
-                 draggedElement.classList.add("shake");  // Add shake effect
-                setTimeout(() => {
-                    draggedElement.classList.remove("shake");
-                }, 500);
-            }
-
-            // Modify DOM *after* scoring:
-            timelineContainer.appendChild(draggedElement);
-            placeEventInTimeline(); // Reposition *all*
-            draggedElement = null; // Reset
-            loadNextEvent(); // Load next event
-        });
-
-        // --- Initial Setup (in DOMContentLoaded) ---
-        events.forEach(event => {
-            if (event.id !== "current-event") { // Don't create a box for the holding area placeholder
-                const eventBox = document.createElement("div");
-                eventBox.classList.add("event-box");
-                eventBox.id = event.id;
-                eventBox.dataset.date = event.date;
-                eventBox.innerHTML = `<p>${event.date}</p><p>${event.description}</p>`;
-                timelineContainer.appendChild(eventBox);
-            }
-        });
-
-        placeEventInTimeline();  // Initial placement of ALL boxes
-        loadNextEvent(); // Load the first event
-
-    }); // End of DOMContentLoaded
-
-    </script>
+    <p id="instruction">Drag events from the stack and place them in chronological order.</p>
+    <div id="game-container">
+      <div class="area-label">Event Stack (<span id="stack-count">4</span> remaining):</div>
+      <div id="source-container"></div>
+      <div class="area-label">Your Timeline:</div>
+      <div class="timeline-wrapper">
+        <div class="timeline-label past">PAST</div>
+        <div id="timeline-container"></div>
+        <div class="timeline-label present">PRESENT</div>
+      </div>
+      <div id="result"></div>
+      <div id="share-container" class="hidden">
+        <button id="share-button">Share Your Score!</button>
+      </div>
+    </div>
+  </div>
+  <script src="script.js"></script>
 </body>
-</html>
+</html> 
