@@ -213,6 +213,11 @@ h1 {
   cursor: default;
   opacity: 1 !important;
   display: block !important;
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  transform: none !important;
+  z-index: 1 !important;
 }
 
 .item.moving-to-position {
