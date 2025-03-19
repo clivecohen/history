@@ -665,10 +665,14 @@ document.addEventListener('DOMContentLoaded', () => {
       // We'll do this in handleTouchEnd instead
     }
     
-    // Store original position for smoother dragging
+    // Get the initial touch position relative to the element for centered dragging
     const rect = this.getBoundingClientRect();
-    this.dataset.startX = rect.left;
-    this.dataset.startY = rect.top;
+    this.dataset.offsetX = touch.clientX - rect.left - (rect.width / 2);
+    this.dataset.offsetY = touch.clientY - rect.top - (rect.height / 2);
+    
+    // Store element's dimensions
+    this.dataset.width = rect.width;
+    this.dataset.height = rect.height;
     
     // Remember original sizes for animation
     rememberOriginalSizes();
@@ -688,15 +692,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentX = touch.clientX;
     const currentY = touch.clientY;
     
-    // Move the dragged element with the finger for a more natural feel
-    // Use translate3d for hardware acceleration
-    const startX = parseFloat(draggedElement.dataset.startX) || 0;
-    const startY = parseFloat(draggedElement.dataset.startY) || 0;
-    const deltaX = currentX - startX;
-    const deltaY = currentY - startY;
+    // Calculate position to keep element centered under finger
+    const offsetX = parseFloat(draggedElement.dataset.offsetX) || 0;
+    const offsetY = parseFloat(draggedElement.dataset.offsetY) || 0;
     
-    draggedElement.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0)`;
-    draggedElement.style.webkitTransform = `translate3d(${deltaX}px, ${deltaY}px, 0)`;
+    // Set the element position directly under the finger, accounting for center-positioning
+    const centerX = currentX - offsetX - (parseFloat(draggedElement.dataset.width) / 2);
+    const centerY = currentY - offsetY - (parseFloat(draggedElement.dataset.height) / 2);
+    
+    // Use absolute positioning for smoother movement
+    draggedElement.style.position = 'fixed';
+    draggedElement.style.left = `${centerX}px`;
+    draggedElement.style.top = `${centerY}px`;
+    draggedElement.style.zIndex = '1000';
+    draggedElement.style.width = `${draggedElement.dataset.width}px`;
     
     // Check if we're hovering over the timeline container
     const timelineRect = timelineContainer.getBoundingClientRect();
@@ -720,7 +729,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const touch = e.changedTouches ? e.changedTouches[0] : null;
     const currentY = touch ? touch.clientY : 0;
     
-    // Reset transforms to prepare for insertion
+    // Reset positioning to prepare for insertion
+    draggedElement.style.position = '';
+    draggedElement.style.left = '';
+    draggedElement.style.top = '';
+    draggedElement.style.zIndex = '';
+    draggedElement.style.width = '';
     draggedElement.style.transform = '';
     draggedElement.style.webkitTransform = '';
     
