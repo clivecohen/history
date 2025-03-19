@@ -616,10 +616,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Apply animation to items
     items.forEach((item, index) => {
-      // Skip applying animation to placed items with special state
-      if (item.classList.contains('placed') && 
-          (item.classList.contains('shrinking') || 
-           item.classList.contains('expanding'))) {
+      // Only skip items that are currently being animated for shrinking/expanding
+      // This allows placed items to move to make space
+      if (item.classList.contains('shrinking') || 
+          item.classList.contains('expanding')) {
         return;
       }
       
@@ -651,7 +651,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const resetDelay = isMobile ? 150 : 200; // Faster reset on mobile
     
     allItems.forEach(item => {
-      // Skip items with special animation states
+      // Only skip items that are currently being animated for shrinking/expanding
+      // This allows placed items to move to make space
       if (item.classList.contains('shrinking') || 
           item.classList.contains('expanding')) {
         return;
