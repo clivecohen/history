@@ -495,6 +495,17 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 50);
     }
     
+    // Now that we've finalized the placement, reveal the next item if this was from the source
+    if (item.classList.contains('top-of-stack')) {
+      item.classList.remove('top-of-stack');
+      
+      // Wait a bit before revealing the next item for better visual feedback
+      setTimeout(() => {
+        revealNextInStack();
+        updateStackCount();
+      }, 300);
+    }
+    
     // Check if this was the last item to be placed
     setTimeout(() => {
       checkGameCompletion();
@@ -796,9 +807,6 @@ document.addEventListener('DOMContentLoaded', () => {
       currentY >= timelineRect.top && 
       currentY <= timelineRect.bottom;
     
-    // Track if we successfully placed the item in the timeline
-    let placedInTimeline = false;
-    
     if (isOverTimeline) {
       // Place the item in the timeline at the appropriate position
       const afterElement = getDragAfterElement(timelineContainer, currentY);
@@ -820,9 +828,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           timelineContainer.appendChild(draggedElement);
         }
-        
-        // Mark that we've successfully placed it
-        placedInTimeline = true;
         
         // Add the TAP TO PLACE button
         draggedElement.classList.add('timeline-item');
@@ -860,18 +865,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Reset animations
     resetItemsAnimation();
-    
-    // Now that we're done with the drag-and-drop operation, if the item was placed
-    // in the timeline from the source AND it was the top stack item, then reveal the next one
-    if (placedInTimeline && draggedElement.classList.contains('top-of-stack')) {
-      draggedElement.classList.remove('top-of-stack');
-      
-      // Wait a bit before revealing the next item for better visual feedback
-      setTimeout(() => {
-        revealNextInStack();
-        updateStackCount();
-      }, 300);
-    }
     
     draggedElement = null;
     isDraggingActive = false;
