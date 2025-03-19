@@ -625,13 +625,13 @@ document.addEventListener('DOMContentLoaded', () => {
       
       // Set transition for smoother animation - use a faster transition for mobile
       const isMobile = 'ontouchstart' in window;
-      const transitionSpeed = isMobile ? '0.2s' : '0.3s';
+      const transitionSpeed = isMobile ? '0.15s' : '0.2s'; // Faster transitions
       item.style.transition = `transform ${transitionSpeed} ease-out`;
       
       if (index >= hoverIndex) {
         // Move items below hover point down
-        // Use a slightly larger gap on mobile for better visibility
-        const moveDistance = isMobile ? 15 : 12;
+        // Use a larger gap for better visibility
+        const moveDistance = isMobile ? 20 : 15; // Increased distance
         item.style.transform = `translateY(${moveDistance}px)`;
       } else {
         // Ensure items above hover point are reset
@@ -648,7 +648,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
     
     const isMobile = 'ontouchstart' in window;
-    const resetDelay = isMobile ? 200 : 300; // Faster reset on mobile
+    const resetDelay = isMobile ? 150 : 200; // Faster reset on mobile
     
     allItems.forEach(item => {
       // Skip items with special animation states
@@ -659,13 +659,13 @@ document.addEventListener('DOMContentLoaded', () => {
       
       // Ensure transition is set for smooth reset
       if (!item.style.transition) {
-        const transitionSpeed = isMobile ? '0.2s' : '0.3s';
+        const transitionSpeed = isMobile ? '0.15s' : '0.2s';
         item.style.transition = `transform ${transitionSpeed} ease-out`;
       }
       
       item.style.transform = '';
       
-      // Use a short delay before removing transition to let animations complete
+      // Use a shorter delay before removing transition to let animations complete
       setTimeout(() => {
         if (!item.classList.contains('dragging')) {
           item.style.transition = '';
@@ -752,18 +752,15 @@ document.addEventListener('DOMContentLoaded', () => {
       const afterElement = getDragAfterElement(timelineContainer, currentY);
       
       // Find the index we're hovering over for animation - IMPORTANT: Exclude the dragging element
-      // This gets all timeline items except the one being dragged (even if it's visually elsewhere)
       const timelineItems = [...timelineContainer.querySelectorAll('.item:not(.dragging)')];
       
       // Calculate hover index
       let hoverIndex = afterElement ? timelineItems.indexOf(afterElement) : timelineItems.length;
       
-      // Only animate if we're hovering at a different position
-      if (hoverIndex !== lastHoveredIndex) {
-        // Animate items to make space
-        animateItemsToMakeSpace(hoverIndex, timelineItems);
-        lastHoveredIndex = hoverIndex;
-      }
+      // Always animate items when hovering over timeline, even if index hasn't changed
+      // This ensures smooth animation when moving the dragged item
+      animateItemsToMakeSpace(hoverIndex, timelineItems);
+      lastHoveredIndex = hoverIndex;
     } else {
       timelineContainer.classList.remove('active-dropzone');
       // Reset animations when moving away from timeline
