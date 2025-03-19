@@ -660,15 +660,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Highlight potential drop zone
     if (this.parentNode === sourceContainer) {
       timelineContainer.classList.add('highlight-dropzone');
-      
-      // DO NOT reveal next item in stack yet - wait until the item is actually placed
-      // We'll do this in handleTouchEnd instead
     }
     
-    // Get the initial touch position relative to the element for centered dragging
+    // Store offsets for centered dragging - simpler calculation
     const rect = this.getBoundingClientRect();
-    this.dataset.offsetX = touch.clientX - rect.left - (rect.width / 2);
-    this.dataset.offsetY = touch.clientY - rect.top - (rect.height / 2);
+    this.dataset.offsetX = touch.clientX - rect.left;
+    this.dataset.offsetY = touch.clientY - rect.top;
     
     // Store element's dimensions
     this.dataset.width = rect.width;
@@ -692,18 +689,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentX = touch.clientX;
     const currentY = touch.clientY;
     
-    // Calculate position to keep element centered under finger
+    // Get the stored offsets - where in the element the user initially touched
     const offsetX = parseFloat(draggedElement.dataset.offsetX) || 0;
     const offsetY = parseFloat(draggedElement.dataset.offsetY) || 0;
     
-    // Set the element position directly under the finger, accounting for center-positioning
-    const centerX = currentX - offsetX - (parseFloat(draggedElement.dataset.width) / 2);
-    const centerY = currentY - offsetY - (parseFloat(draggedElement.dataset.height) / 2);
+    // Position the element so the touch point is at the same relative position
+    // where the user first touched the element
+    const newLeft = currentX - offsetX;
+    const newTop = currentY - offsetY;
     
     // Use absolute positioning for smoother movement
     draggedElement.style.position = 'fixed';
-    draggedElement.style.left = `${centerX}px`;
-    draggedElement.style.top = `${centerY}px`;
+    draggedElement.style.left = `${newLeft}px`;
+    draggedElement.style.top = `${newTop}px`;
     draggedElement.style.zIndex = '1000';
     draggedElement.style.width = `${draggedElement.dataset.width}px`;
     
