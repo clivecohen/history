@@ -623,12 +623,16 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       
-      // Set transition for smoother animation
-      item.style.transition = 'transform 0.3s ease-out';
+      // Set transition for smoother animation - use a faster transition for mobile
+      const isMobile = 'ontouchstart' in window;
+      const transitionSpeed = isMobile ? '0.2s' : '0.3s';
+      item.style.transition = `transform ${transitionSpeed} ease-out`;
       
       if (index >= hoverIndex) {
         // Move items below hover point down
-        item.style.transform = 'translateY(12px)';
+        // Use a slightly larger gap on mobile for better visibility
+        const moveDistance = isMobile ? 15 : 12;
+        item.style.transform = `translateY(${moveDistance}px)`;
       } else {
         // Ensure items above hover point are reset
         item.style.transform = '';
@@ -643,11 +647,20 @@ document.addEventListener('DOMContentLoaded', () => {
       ...timelineContainer.querySelectorAll('.item')
     ];
     
+    const isMobile = 'ontouchstart' in window;
+    const resetDelay = isMobile ? 200 : 300; // Faster reset on mobile
+    
     allItems.forEach(item => {
       // Skip items with special animation states
       if (item.classList.contains('shrinking') || 
           item.classList.contains('expanding')) {
         return;
+      }
+      
+      // Ensure transition is set for smooth reset
+      if (!item.style.transition) {
+        const transitionSpeed = isMobile ? '0.2s' : '0.3s';
+        item.style.transition = `transform ${transitionSpeed} ease-out`;
       }
       
       item.style.transform = '';
@@ -657,7 +670,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!item.classList.contains('dragging')) {
           item.style.transition = '';
         }
-      }, 300);
+      }, resetDelay);
     });
   }
   
@@ -738,8 +751,11 @@ document.addEventListener('DOMContentLoaded', () => {
       // Get the insertion point to animate items
       const afterElement = getDragAfterElement(timelineContainer, currentY);
       
-      // Find the index we're hovering over for animation
+      // Find the index we're hovering over for animation - IMPORTANT: Exclude the dragging element
+      // This gets all timeline items except the one being dragged (even if it's visually elsewhere)
       const timelineItems = [...timelineContainer.querySelectorAll('.item:not(.dragging)')];
+      
+      // Calculate hover index
       let hoverIndex = afterElement ? timelineItems.indexOf(afterElement) : timelineItems.length;
       
       // Only animate if we're hovering at a different position
@@ -865,7 +881,11 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Get element to insert dragged item after
   function getDragAfterElement(container, y) {
+    // Get all draggable elements except the one being dragged
     const draggableElements = [...container.querySelectorAll('.item:not(.dragging)')];
+    
+    // If there are no draggable elements, return null to append at the end
+    if (draggableElements.length === 0) return null;
     
     // If there's only one item in the timeline and we're not already dragging within the timeline,
     // maintain the centered appearance by placing new items after the first item
@@ -886,9 +906,14 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
     
+    // Give a slight bias toward inserting after rather than before items on mobile
+    // This helps make the touch interaction feel more natural
+    const isMobile = 'ontouchstart' in window;
+    const offsetBias = isMobile ? 5 : 0;
+    
     return draggableElements.reduce((closest, child) => {
       const box = child.getBoundingClientRect();
-      const offset = y - box.top - box.height / 2;
+      const offset = y - box.top - box.height / 2 + offsetBias;
       
       if (offset < 0 && offset > closest.offset) {
         return { offset: offset, element: child };
