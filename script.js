@@ -298,6 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function finalizeItemPlacement(item) {
     // Remove the timeline-item class which enabled the tap button
     item.classList.remove('timeline-item');
+    
     // Remove the button
     const tapButton = item.querySelector('.tap-button');
     if (tapButton) {
@@ -343,6 +344,42 @@ document.addEventListener('DOMContentLoaded', () => {
     // Mark the item as placed and disable dragging
     item.classList.add('placed');
     item.draggable = false;
+    
+    // Ensure all positioning styles are reset so the item stays in place
+    item.style.position = '';
+    item.style.top = '';
+    item.style.left = '';
+    item.style.width = '';
+    item.style.height = '';
+    item.style.transform = '';
+    item.style.zIndex = '';
+    item.style.webkitTransform = '';
+    
+    // Make sure the item stays in the timeline
+    if (!timelineContainer.contains(item)) {
+      console.warn("Item not in timeline container when finalizing placement");
+      
+      // Determine where to place it
+      const existingItems = [...timelineContainer.querySelectorAll('.item')];
+      
+      if (existingItems.length === 0) {
+        timelineContainer.appendChild(item);
+      } else {
+        // Find the right position based on year
+        let inserted = false;
+        for (let i = 0; i < existingItems.length; i++) {
+          if (parseInt(existingItems[i].dataset.year) > yearToCheck) {
+            timelineContainer.insertBefore(item, existingItems[i]);
+            inserted = true;
+            break;
+          }
+        }
+        
+        if (!inserted) {
+          timelineContainer.appendChild(item);
+        }
+      }
+    }
     
     // Update score and display feedback
     if (isCorrect) {
