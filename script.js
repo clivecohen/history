@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const historicalEvents = [
     {
       year: 1215,
-      event: "King John signed the Magna Carta in England",
+      event: "Bing John signed the Magna Carta in England",
       fullText: "<b>1215</b>, King John signed the Magna Carta in England",
       color: "#3498db" // Original blue
     },
