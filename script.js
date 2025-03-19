@@ -486,53 +486,25 @@ document.addEventListener('DOMContentLoaded', () => {
       targetPosition = null; // null means append to the end
     }
     
-    // Get the item's dimensions and position for the animation
-    const itemRect = item.getBoundingClientRect();
-    const itemStyles = window.getComputedStyle(item);
-    const originalPosition = itemStyles.position;
-    const originalZIndex = itemStyles.zIndex;
-    
     // Store the item's original content and appearance
     const originalContent = item.innerHTML;
     const originalColor = item.style.backgroundColor;
     
-    // Step 1: Shrink the item in its current position
-    item.style.position = 'fixed';
-    item.style.top = `${itemRect.top}px`;
-    item.style.left = `${itemRect.left}px`;
-    item.style.width = `${itemRect.width}px`;
-    item.style.height = `${itemRect.height}px`;
-    item.style.zIndex = '1000';
-    item.style.transformOrigin = 'center center';
-    
-    // Create a placeholder at the current position to maintain layout
-    const currentPlaceholder = document.createElement('div');
-    currentPlaceholder.style.width = `${itemRect.width}px`;
-    currentPlaceholder.style.height = `${itemRect.height}px`;
-    currentPlaceholder.style.margin = '4px 0';
-    currentPlaceholder.style.opacity = '0';
-    
-    // Insert placeholder at current position
-    item.parentNode.insertBefore(currentPlaceholder, item);
-    
-    // Remove item from the DOM flow for animation
-    document.body.appendChild(item);
-    
-    // Add the shrinking animation class
+    // Step 1: Hide the item with a quick shrink animation
     item.classList.add('shrinking');
     
-    // Step 2: After shrinking, create and animate the highlight at the target position
+    // Step 2: After shrinking, create and show highlight at target position
     setTimeout(() => {
-      // Remove the current placeholder
-      if (currentPlaceholder.parentNode) {
-        currentPlaceholder.parentNode.removeChild(currentPlaceholder);
+      // Remove the item from its current position
+      if (item.parentNode) {
+        item.parentNode.removeChild(item);
       }
       
       // Create a placeholder for the target position with a highlight effect
       const targetPlaceholder = document.createElement('div');
       targetPlaceholder.className = 'highlight-slot';
-      targetPlaceholder.style.width = `${itemRect.width}px`;
-      targetPlaceholder.style.height = `${itemRect.height}px`;
+      targetPlaceholder.style.width = '90%';
+      targetPlaceholder.style.height = '50px';
       targetPlaceholder.style.margin = '4px 0';
       
       // Insert the highlighted placeholder at the target position
@@ -542,72 +514,42 @@ document.addEventListener('DOMContentLoaded', () => {
         timelineContainer.appendChild(targetPlaceholder);
       }
       
-      // Get the target position for the expanding animation
-      const targetRect = targetPlaceholder.getBoundingClientRect();
-      
-      // Step 3: Move the shrunken item to the new position (invisible) and prepare for expansion
-      item.style.opacity = '0';
-      item.style.top = `${targetRect.top}px`;
-      item.style.left = `${targetRect.left}px`;
-      item.classList.remove('shrinking');
-      
-      // Wait a moment before proceeding with the DOM insertion
+      // After showing the highlight briefly, place the item and expand it
       setTimeout(() => {
-        // Remove the highlight placeholder when we're ready to insert the real item
+        // Remove highlight placeholder
         if (targetPlaceholder.parentNode) {
           targetPlaceholder.parentNode.removeChild(targetPlaceholder);
         }
         
-        // Insert the actual item at the correct position in the DOM
+        // Reset the item's styles
+        item.classList.remove('shrinking');
+        
+        // Make sure the item content is restored
+        item.innerHTML = originalContent;
+        item.style.backgroundColor = originalColor;
+        
+        // Insert the item at its correct position
         if (targetPosition) {
           timelineContainer.insertBefore(item, targetPosition);
         } else {
           timelineContainer.appendChild(item);
         }
         
-        // Pause briefly to ensure the DOM updates before starting the expansion animation
+        // Apply the expanding animation
+        item.classList.add('expanding');
+        
+        // Clean up after animation
         setTimeout(() => {
-          // Step 4: Expand the item at the new position
-          item.style.position = 'relative';
-          item.style.top = '';
-          item.style.left = '';
-          item.style.width = '';
-          item.style.height = '';
-          item.style.opacity = '1'; // Make sure it's visible
-          item.classList.add('expanding');
+          item.classList.remove('expanding');
+          item.classList.add('highlight-position');
           
-          // Restore the original content with any modifications
-          item.innerHTML = originalContent;
-          item.style.backgroundColor = originalColor;
-          
-          // Make sure the item is in the timeline and visible
-          if (!timelineContainer.contains(item)) {
-            console.log("Item not in container, reinserting");
-            if (targetPosition) {
-              timelineContainer.insertBefore(item, targetPosition);
-            } else {
-              timelineContainer.appendChild(item);
-            }
-          }
-          
-          // Reset styles after expansion is complete
+          // Remove final highlight after a moment
           setTimeout(() => {
-            item.style.zIndex = originalZIndex;
-            item.classList.remove('expanding');
-            
-            // Make sure item is still visible
-            item.style.opacity = '1';
-            item.style.display = 'block';
-            
-            // Add the final highlight effect
-            item.classList.add('highlight-position');
-            setTimeout(() => {
-              item.classList.remove('highlight-position');
-            }, 1000);
-          }, 600); // Match with the expandIn animation duration
-        }, 10);
-      }, 50);
-    }, 500); // Match with the shrinkAway animation duration
+            item.classList.remove('highlight-position');
+          }, 1000);
+        }, 600);
+      }, 500);
+    }, 500);
   }
 
   // Update score display
@@ -699,6 +641,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Touch event handlers for mobile
   function handleTouchStart(e) {
     e.preventDefault();
+    
+    // Only handle touch events if this isn't a placed item
+    if (this.classList.contains('placed')) return;
+    
     const touch = e.touches[0];
     touchY = touch.clientY;
     
@@ -724,8 +670,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   function handleTouchMove(e) {
+    // Don't do anything if no drag is active
+    if (!isDraggingActive || !draggedElement) return;
+    
     e.preventDefault();
-    if (!isDraggingActive || !e.target.classList.contains('dragging') || e.target.classList.contains('placed')) return;
+    
+    // Skip if this is a placed item or not the dragging element
+    if (draggedElement.classList.contains('placed') || 
+        !draggedElement.classList.contains('dragging')) return;
     
     const touch = e.touches[0];
     const currentY = touch.clientY;
@@ -804,14 +756,17 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   function handleTouchEnd(e) {
+    // Skip if no active drag
+    if (!isDraggingActive || !draggedElement) return;
+    
     // If we dropped outside the timeline, return to stack
     if (draggedElement && draggedElement.parentNode !== timelineContainer && 
         draggedElement.parentNode !== sourceContainer) {
       returnToStack(draggedElement);
     }
     
-    this.classList.remove('dragging');
-    this.style.opacity = '1';
+    draggedElement.classList.remove('dragging');
+    draggedElement.style.opacity = '1';
     
     timelineContainer.classList.remove('active-dropzone');
     timelineContainer.classList.remove('highlight-dropzone');
