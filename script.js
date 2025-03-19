@@ -600,19 +600,29 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Animate items to make space for dragged item
   function animateItemsToMakeSpace(hoverIndex, items) {
-    // Reset any previous animations
+    debugLog("Animating items to make space at index: " + hoverIndex);
+    
+    // Reset any previous animations first
     resetItemsAnimation();
     
-    // Apply smooth transitions
+    // Apply animation to items
     items.forEach((item, index) => {
+      // Skip applying animation to placed items with special state
+      if (item.classList.contains('placed') && 
+          (item.classList.contains('shrinking') || 
+           item.classList.contains('expanding'))) {
+        return;
+      }
+      
+      // Set transition for smoother animation
+      item.style.transition = 'transform 0.3s ease-out';
+      
       if (index >= hoverIndex) {
         // Move items below hover point down
-        item.style.transform = 'translateY(10px)';
-        item.style.transition = 'transform 0.2s ease-out';
+        item.style.transform = 'translateY(12px)';
       } else {
-        // Reset items above hover point
-        item.style.transform = 'translateY(0)';
-        item.style.transition = 'transform 0.2s ease-out';
+        // Ensure items above hover point are reset
+        item.style.transform = '';
       }
     });
   }
@@ -625,11 +635,20 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
     
     allItems.forEach(item => {
+      // Skip items with special animation states
+      if (item.classList.contains('shrinking') || 
+          item.classList.contains('expanding')) {
+        return;
+      }
+      
       item.style.transform = '';
+      
       // Use a short delay before removing transition to let animations complete
       setTimeout(() => {
-        item.style.transition = '';
-      }, 200);
+        if (!item.classList.contains('dragging')) {
+          item.style.transition = '';
+        }
+      }, 300);
     });
   }
   
@@ -706,8 +725,25 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (isOverTimeline) {
       timelineContainer.classList.add('active-dropzone');
+      
+      // Get the insertion point to animate items
+      const afterElement = getDragAfterElement(timelineContainer, currentY);
+      
+      // Find the index we're hovering over for animation
+      const timelineItems = [...timelineContainer.querySelectorAll('.item:not(.dragging)')];
+      let hoverIndex = afterElement ? timelineItems.indexOf(afterElement) : timelineItems.length;
+      
+      // Only animate if we're hovering at a different position
+      if (hoverIndex !== lastHoveredIndex) {
+        // Animate items to make space
+        animateItemsToMakeSpace(hoverIndex, timelineItems);
+        lastHoveredIndex = hoverIndex;
+      }
     } else {
       timelineContainer.classList.remove('active-dropzone');
+      // Reset animations when moving away from timeline
+      resetItemsAnimation();
+      lastHoveredIndex = -1;
     }
     
     touchY = currentY;
