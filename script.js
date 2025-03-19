@@ -95,11 +95,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Remember original sizes for animation
         rememberOriginalSizes();
-
-        // Only reveal next stack item on desktop, not on mobile
-        if (draggable.parentNode === sourceContainer && draggable.classList.contains('top-of-stack') && !('ontouchstart' in window)) {
-          revealNextInStack();
-        }
       });
       
       draggable.addEventListener('dragend', () => {
@@ -262,12 +257,6 @@ document.addEventListener('DOMContentLoaded', () => {
       
       timelineContainer.classList.add('highlight-dropzone');
       rememberOriginalSizes();
-      
-      // For desktop only, reveal the next item in stack
-      // Mobile will use the touchend handler instead
-      if (item.parentNode === sourceContainer && item.classList.contains('top-of-stack') && !('ontouchstart' in window)) {
-        revealNextInStack();
-      }
     });
     
     item.addEventListener('dragend', () => {
