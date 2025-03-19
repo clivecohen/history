@@ -12,6 +12,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const scoreDisplay = document.getElementById('score');
   const shareContainer = document.getElementById('share-container');
   const shareButton = document.getElementById('share-button');
+  const introScreen = document.getElementById('intro-screen');
+  const continueButton = document.getElementById('continue-button');
+  const gameContent = document.getElementById('game-content');
+  
+  // Set up intro screen
+  continueButton.addEventListener('click', () => {
+    introScreen.classList.add('hidden');
+    gameContent.classList.remove('hidden');
+  });
   
   // Historical events game data
   const historicalEvents = [
