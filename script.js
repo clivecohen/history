@@ -340,38 +340,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Handle finalizing the placement of an item
   function finalizeItemPlacement(item) {
-    console.log("Finalizing placement of item:", item);
+    debugLog("Finalizing placement of item");
     
     // Safety checks
     if (!item || !item.parentNode) {
-      console.error("Invalid item or item not in DOM");
+      debugLog("Error: Invalid item or item not in DOM");
       return;
     }
     
     // Make sure item is in the timeline
     if (!timelineContainer.contains(item)) {
-      console.error("Item not in timeline container");
+      debugLog("Error: Item not in timeline container");
       return;
     }
-    
-    // Remove the timeline-item class which enabled the tap button
-    item.classList.remove('timeline-item');
-    
-    // Remove the button
-    const tapButton = item.querySelector('.tap-button');
-    if (tapButton) {
-      tapButton.remove();
-    }
-    
-    // Force a reflow to ensure all styles are applied
-    void item.offsetWidth;
     
     // Get the current position in the timeline
     const timelineItems = [...timelineContainer.querySelectorAll('.item')];
     const placedIndex = timelineItems.indexOf(item);
     
     if (placedIndex === -1) {
-      console.error("Item not found in timeline items collection");
+      debugLog("Error: Item not found in timeline items collection");
       return;
     }
     
@@ -401,7 +389,16 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
     
-    console.log("Item placed correctly?", isCorrect);
+    debugLog("Placement correct? " + isCorrect);
+    
+    // Remove the timeline-item class which enabled the tap button
+    item.classList.remove('timeline-item');
+    
+    // Remove the button immediately
+    const tapButton = item.querySelector('.tap-button');
+    if (tapButton) {
+      tapButton.remove();
+    }
     
     // Mark the item as placed and disable dragging
     item.classList.add('placed');
@@ -417,230 +414,130 @@ document.addEventListener('DOMContentLoaded', () => {
     item.style.zIndex = '';
     item.style.webkitTransform = '';
     
-    // Force another reflow for Safari
+    // Force styles to be applied (helps with Safari)
     void item.offsetWidth;
+    
+    // Replace the text with full version including bold year
+    item.innerHTML = item.dataset.fullText;
+    
+    // Ensure the color is preserved
+    item.style.backgroundColor = item.dataset.color;
+    
+    // Force another style application
+    void item.offsetWidth;
+    
+    // Safari-specific fix: Ensure the item is visible
+    item.style.opacity = '1';
+    item.style.display = 'block';
     
     // Update score and display feedback
     if (isCorrect) {
       score += 100;
       updateScore();
+      debugLog("Showing correct feedback");
       
-      // Replace the text with full version including bold year
-      item.innerHTML = item.dataset.fullText;
-      // Ensure the color is preserved
-      item.style.backgroundColor = item.dataset.color;
-      
-      // Show feedback message
+      // Safari-friendly way of showing feedback
       showFeedback('Correct! +100 points', 'correct');
       
-      // Add fireworks animation
-      createFireworks(item);
+      // Small delay for Safari
+      setTimeout(() => {
+        // Add fireworks animation - Safari friendly approach
+        const fireworksElement = document.createElement('div');
+        fireworksElement.className = 'fireworks-container';
+        item.appendChild(fireworksElement);
+        
+        debugLog("Creating fireworks");
+        createSimplifiedFireworks(fireworksElement);
+        
+        // Remove fireworks after animation
+        setTimeout(() => {
+          if (fireworksElement.parentNode) {
+            fireworksElement.parentNode.removeChild(fireworksElement);
+          }
+        }, 1500);
+      }, 50);
+      
     } else {
-      // Show feedback message
+      debugLog("Showing incorrect feedback");
+      
+      // Safari-friendly way of showing feedback
       showFeedback('Incorrect placement! No points', 'incorrect');
       
-      // Show full text
-      item.innerHTML = item.dataset.fullText;
-      item.style.backgroundColor = item.dataset.color;
-      
-      // Show thumbs down animation
-      createThumbsDown(item);
-      
-      // Always move item to its correct position after showing feedback
+      // Small delay for Safari
       setTimeout(() => {
-        moveItemToCorrectPosition(item, timelineItems);
-      }, 1000); // Small delay so user can see the animation
+        // Create thumbs down element - Safari friendly
+        debugLog("Creating thumbs down");
+        const thumbsElement = document.createElement('div');
+        thumbsElement.className = 'thumbs-down';
+        thumbsElement.innerHTML = '👎';
+        thumbsElement.style.position = 'absolute';
+        thumbsElement.style.fontSize = '40px';
+        thumbsElement.style.top = '50%';
+        thumbsElement.style.left = '50%';
+        thumbsElement.style.transform = 'translate(-50%, -50%)';
+        thumbsElement.style.zIndex = '100';
+        thumbsElement.style.color = '#e74c3c';
+        item.appendChild(thumbsElement);
+        
+        // Manually animate the thumbs down for Safari
+        setTimeout(() => { thumbsElement.style.opacity = '1'; }, 50);
+        
+        // Remove thumbs down after animation
+        setTimeout(() => {
+          if (thumbsElement.parentNode) {
+            thumbsElement.parentNode.removeChild(thumbsElement);
+          }
+          
+          // Move to correct position after feedback
+          moveItemToCorrectPosition(item, timelineItems);
+        }, 1000);
+      }, 50);
     }
-    
-    // Apply any urgent style fixes to make sure item is visible
-    setTimeout(() => {
-      item.style.opacity = '1';
-      item.style.display = 'block';
-    }, 100);
     
     // Check if this was the last item to be placed
     setTimeout(() => {
       checkGameCompletion();
-    }, 1500); // Check after animations have completed
+    }, 1500);
   }
 
-  // Create fireworks animation around an item
-  function createFireworks(item) {
-    debugLog("Creating fireworks animation");
-    
-    // Create container for the fireworks
-    const fireworksContainer = document.createElement('div');
-    fireworksContainer.className = 'fireworks-container';
-    item.appendChild(fireworksContainer);
-    
-    // Create multiple firework particles
-    const colors = ['#e74c3c', '#f1c40f', '#2ecc71', '#3498db', '#9b59b6', '#ff9ff3', '#feca57', '#ff6b6b'];
-    const particleCount = 28; // Reduced particle count by another 25%
+  // Simplified fireworks for Safari
+  function createSimplifiedFireworks(container) {
+    const colors = ['#e74c3c', '#f1c40f', '#2ecc71', '#3498db', '#9b59b6'];
+    const particleCount = 20;
     
     for (let i = 0; i < particleCount; i++) {
       const firework = document.createElement('div');
-      firework.className = 'firework';
+      firework.style.position = 'absolute';
+      firework.style.width = '8px';
+      firework.style.height = '8px';
+      firework.style.borderRadius = '50%';
+      firework.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+      firework.style.opacity = '0';
       
-      // Random position and color
+      // Random position
       const angle = Math.random() * Math.PI * 2;
-      const distance = 39.4 + Math.random() * 45; // Reduced distance by another 25%
+      const distance = 30 + Math.random() * 40;
       const x = Math.cos(angle) * distance;
       const y = Math.sin(angle) * distance;
-      const color = colors[Math.floor(Math.random() * colors.length)];
       
-      firework.style.setProperty('--x', `${x}px`);
-      firework.style.setProperty('--y', `${y}px`);
-      firework.style.backgroundColor = color;
+      // Set initial position
+      firework.style.top = '50%';
+      firework.style.left = '50%';
       
-      // Add slight delay for more realistic effect
-      firework.style.animationDelay = `${Math.random() * 0.3}s`;
+      container.appendChild(firework);
       
-      fireworksContainer.appendChild(firework);
-    }
-    
-    // Create a second wave of fireworks for more impact
-    setTimeout(() => {
-      for (let i = 0; i < 11; i++) { // Reduced second wave count by another 25%
-        const firework = document.createElement('div');
-        firework.className = 'firework';
-        
-        // Random position and color
-        const angle = Math.random() * Math.PI * 2;
-        const distance = 28.1 + Math.random() * 33.8; // Reduced distance by another 25%
-        const x = Math.cos(angle) * distance;
-        const y = Math.sin(angle) * distance;
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        
-        firework.style.setProperty('--x', `${x}px`);
-        firework.style.setProperty('--y', `${y}px`);
-        firework.style.backgroundColor = color;
-        
-        fireworksContainer.appendChild(firework);
-      }
-    }, 200);
-    
-    // Remove fireworks container after animation completes
-    setTimeout(() => {
-      if (fireworksContainer.parentNode === item) {
-        item.removeChild(fireworksContainer);
-      }
-    }, 1800); // Slightly reduced animation duration
-  }
-
-  // Create thumbs down animation for incorrect placement
-  function createThumbsDown(item) {
-    debugLog("Creating thumbs down animation");
-    
-    const thumbsDown = document.createElement('div');
-    thumbsDown.className = 'thumbs-down';
-    thumbsDown.innerHTML = '👎';
-    
-    // Position at center of the item
-    item.style.position = 'relative';
-    item.appendChild(thumbsDown);
-    
-    // Remove after animation completes
-    setTimeout(() => {
-      if (thumbsDown.parentNode === item) {
-        item.removeChild(thumbsDown);
-      }
-    }, 1200);
-  }
-
-  // Move item to its correct position in the timeline
-  function moveItemToCorrectPosition(item, timelineItems) {
-    const yearToCheck = parseInt(item.dataset.year);
-    
-    // Sort items by year, excluding the item we're moving
-    const sortedItems = [...timelineItems].filter(i => i !== item)
-      .sort((a, b) => parseInt(a.dataset.year) - parseInt(b.dataset.year));
-    
-    // Find where to insert our item based on its year
-    let insertAfterElement = null;
-    let targetPosition;
-    
-    // First, calculate the position where the item should go
-    for (let i = 0; i < sortedItems.length; i++) {
-      if (parseInt(sortedItems[i].dataset.year) > yearToCheck) {
-        // This will be the insertion point
-        targetPosition = i === 0 ? sortedItems[0] : sortedItems[i-1].nextSibling;
-        break;
-      }
-      insertAfterElement = sortedItems[i];
-    }
-    
-    // If we didn't find a position, it should be placed last
-    if (!targetPosition && insertAfterElement) {
-      targetPosition = insertAfterElement.nextSibling;
-    } else if (!targetPosition) {
-      // If timeline is empty (shouldn't happen), append to container
-      targetPosition = null; // null means append to the end
-    }
-    
-    // Store the item's original content and appearance
-    const originalContent = item.innerHTML;
-    const originalColor = item.style.backgroundColor;
-    
-    // Step 1: Hide the item with a quick shrink animation
-    item.classList.add('shrinking');
-    
-    // Step 2: After shrinking, create and show highlight at target position
-    setTimeout(() => {
-      // Remove the item from its current position
-      if (item.parentNode) {
-        item.parentNode.removeChild(item);
-      }
-      
-      // Create a placeholder for the target position with a highlight effect
-      const targetPlaceholder = document.createElement('div');
-      targetPlaceholder.className = 'highlight-slot';
-      targetPlaceholder.style.width = '90%';
-      targetPlaceholder.style.height = '50px';
-      targetPlaceholder.style.margin = '4px 0';
-      
-      // Insert the highlighted placeholder at the target position
-      if (targetPosition) {
-        timelineContainer.insertBefore(targetPlaceholder, targetPosition);
-      } else {
-        timelineContainer.appendChild(targetPlaceholder);
-      }
-      
-      // After showing the highlight briefly, place the item and expand it
+      // Manually animate for Safari
       setTimeout(() => {
-        // Remove highlight placeholder
-        if (targetPlaceholder.parentNode) {
-          targetPlaceholder.parentNode.removeChild(targetPlaceholder);
-        }
+        firework.style.opacity = '1';
+        firework.style.transform = `translate(${x}px, ${y}px)`;
+        firework.style.transition = 'all 0.5s ease-out';
         
-        // Reset the item's styles
-        item.classList.remove('shrinking');
-        
-        // Make sure the item content is restored
-        item.innerHTML = originalContent;
-        item.style.backgroundColor = originalColor;
-        
-        // Insert the item at its correct position
-        if (targetPosition) {
-          timelineContainer.insertBefore(item, targetPosition);
-        } else {
-          timelineContainer.appendChild(item);
-        }
-        
-        // Apply the expanding animation
-        item.classList.add('expanding');
-        
-        // Clean up after animation
+        // Fade out
         setTimeout(() => {
-          item.classList.remove('expanding');
-          item.classList.add('highlight-position');
-          
-          // Remove final highlight after a moment
-          setTimeout(() => {
-            item.classList.remove('highlight-position');
-          }, 1000);
-        }, 600);
-      }, 500);
-    }, 500);
+          firework.style.opacity = '0';
+        }, 300);
+      }, Math.random() * 200);
+    }
   }
 
   // Update score display
