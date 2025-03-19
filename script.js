@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const historicalEvents = [
     {
       year: 1215,
-      event: "Bing John signed the Magna Carta in England",
+      event: "King John signed the Magna Carta in England",
       fullText: "<b>1215</b>, King John signed the Magna Carta in England",
       color: "#3498db" // Original blue
     },
@@ -659,11 +659,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (this.parentNode === sourceContainer) {
       timelineContainer.classList.add('highlight-dropzone');
       
-      // If dragging from source, reveal next item in stack
-      if (this.classList.contains('top-of-stack')) {
-        revealNextInStack();
-      }
+      // DO NOT reveal next item in stack yet - wait until the item is actually placed
+      // We'll do this in handleTouchEnd instead
     }
+    
+    // Store original position for smoother dragging
+    const rect = this.getBoundingClientRect();
+    this.dataset.startX = rect.left;
+    this.dataset.startY = rect.top;
     
     // Remember original sizes for animation
     rememberOriginalSizes();
@@ -680,7 +683,18 @@ document.addEventListener('DOMContentLoaded', () => {
         !draggedElement.classList.contains('dragging')) return;
     
     const touch = e.touches[0];
+    const currentX = touch.clientX;
     const currentY = touch.clientY;
+    
+    // Move the dragged element with the finger for a more natural feel
+    // Use translate3d for hardware acceleration
+    const startX = parseFloat(draggedElement.dataset.startX) || 0;
+    const startY = parseFloat(draggedElement.dataset.startY) || 0;
+    const deltaX = currentX - startX;
+    const deltaY = currentY - startY;
+    
+    draggedElement.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0)`;
+    draggedElement.style.webkitTransform = `translate3d(${deltaX}px, ${deltaY}px, 0)`;
     
     // Check if we're hovering over the timeline container
     const timelineRect = timelineContainer.getBoundingClientRect();
@@ -690,66 +704,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (isOverTimeline) {
       timelineContainer.classList.add('active-dropzone');
-      
-      const draggable = draggedElement;
-      const afterElement = getDragAfterElement(timelineContainer, currentY);
-      
-      // Find the index we're hovering over for animation
-      const timelineItems = [...timelineContainer.querySelectorAll('.item:not(.dragging)')];
-      let hoverIndex = afterElement ? timelineItems.indexOf(afterElement) : timelineItems.length;
-      
-      // Only animate if we're hovering at a different position
-      if (hoverIndex !== lastHoveredIndex) {
-        animateItemsToMakeSpace(hoverIndex, timelineItems);
-        lastHoveredIndex = hoverIndex;
-      }
-      
-      if (draggable) {
-        if (draggable.parentNode === sourceContainer) {
-          // Moving from source to timeline
-          if (timelineItems.length === 1 && timelineContainer.querySelector('.timeline-centering-wrapper')) {
-            // If there's only one item in a wrapper, remove the wrapper and add items directly
-            const wrapper = timelineContainer.querySelector('.timeline-centering-wrapper');
-            const firstItem = wrapper.querySelector('.item');
-            
-            // Move the first item out of the wrapper
-            timelineContainer.appendChild(firstItem);
-            wrapper.remove();
-            
-            // Then add the new item
-            if (afterElement == null) {
-              timelineContainer.appendChild(draggable);
-            } else {
-              timelineContainer.insertBefore(draggable, afterElement);
-            }
-          } else {
-            // Normal case - just add to the timeline
-            if (afterElement == null) {
-              timelineContainer.appendChild(draggable);
-            } else {
-              timelineContainer.insertBefore(draggable, afterElement);
-            }
-          }
-          
-          placedFirstEvent = true;
-          
-          // Add a class to identify items in the timeline
-          draggable.classList.add('timeline-item');
-          
-          // Add the TAP TO PLACE button
-          addTapToPlaceButton(draggable);
-        } else if (draggable.parentNode === timelineContainer) {
-          // Reordering within timeline
-          if (afterElement == null) {
-            timelineContainer.appendChild(draggable);
-          } else if (afterElement !== draggable) {
-            timelineContainer.insertBefore(draggable, afterElement);
-          }
-        }
-      }
     } else {
       timelineContainer.classList.remove('active-dropzone');
-      resetItemsAnimation();
     }
     
     touchY = currentY;
@@ -759,12 +715,76 @@ document.addEventListener('DOMContentLoaded', () => {
     // Skip if no active drag
     if (!isDraggingActive || !draggedElement) return;
     
-    // If we dropped outside the timeline, return to stack
-    if (draggedElement && draggedElement.parentNode !== timelineContainer && 
-        draggedElement.parentNode !== sourceContainer) {
-      returnToStack(draggedElement);
+    const touch = e.changedTouches ? e.changedTouches[0] : null;
+    const currentY = touch ? touch.clientY : 0;
+    
+    // Reset transforms to prepare for insertion
+    draggedElement.style.transform = '';
+    draggedElement.style.webkitTransform = '';
+    
+    // Check if we dropped over the timeline
+    const timelineRect = timelineContainer.getBoundingClientRect();
+    const isOverTimeline = 
+      currentY >= timelineRect.top && 
+      currentY <= timelineRect.bottom;
+    
+    if (isOverTimeline) {
+      // Place the item in the timeline at the appropriate position
+      const afterElement = getDragAfterElement(timelineContainer, currentY);
+      
+      if (draggedElement.parentNode === sourceContainer) {
+        // Moving from source to timeline
+        if (timelineContainer.querySelector('.timeline-centering-wrapper')) {
+          const wrapper = timelineContainer.querySelector('.timeline-centering-wrapper');
+          const firstItem = wrapper.querySelector('.item');
+          
+          // Move the first item out of the wrapper
+          timelineContainer.appendChild(firstItem);
+          wrapper.remove();
+        }
+        
+        // Move the element to its new position
+        if (afterElement) {
+          timelineContainer.insertBefore(draggedElement, afterElement);
+        } else {
+          timelineContainer.appendChild(draggedElement);
+        }
+        
+        // Now that the item has been placed, we can reveal the next item in the stack
+        if (draggedElement.classList.contains('top-of-stack')) {
+          setTimeout(() => {
+            revealNextInStack();
+          }, 300); // Small delay for better visual feedback
+        }
+        
+        // Add the TAP TO PLACE button
+        draggedElement.classList.add('timeline-item');
+        addTapToPlaceButton(draggedElement);
+        
+        placedFirstEvent = true;
+      } else if (draggedElement.parentNode === timelineContainer) {
+        // Reordering within timeline
+        if (afterElement && afterElement !== draggedElement) {
+          timelineContainer.insertBefore(draggedElement, afterElement);
+        } else if (!afterElement) {
+          timelineContainer.appendChild(draggedElement);
+        }
+      }
+    } else {
+      // If dropped outside the timeline, return to stack
+      if (draggedElement.parentNode !== timelineContainer && 
+          draggedElement.parentNode !== sourceContainer) {
+        returnToStack(draggedElement);
+      } else if (draggedElement.classList.contains('timeline-item')) {
+        // If it was already in the timeline but dragged out, return it to its position
+        // No need to do anything as it's already in the correct DOM position
+      } else if (draggedElement.parentNode === sourceContainer) {
+        // If it was from the source and dropped outside, make sure it stays in the source
+        // No action needed as it's already in the correct position
+      }
     }
     
+    // Clean up
     draggedElement.classList.remove('dragging');
     draggedElement.style.opacity = '1';
     
