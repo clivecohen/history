@@ -1,123 +1,1016 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const container = document.getElementById('gameContainer');
-    const tapButton = document.getElementById('tapButton');
-    let activeSquare = null;
-    let squares = [];
-    let score = 0;
-
-    const triviaData = [
-        { text: "This band broke up in 1970", correctY: 400 },
-        { text: "This console launched in 2006", correctY: 300 },
-        { text: "This movie won Best Picture in 2004", correctY: 200 },
-        { text: "This gadget launched in 1997", correctY: 100 }
-    ];
-
-    function startGame() {
-        addSquare(0);
+  // Game variables
+  const sourceContainer = document.getElementById('source-container');
+  const timelineContainer = document.getElementById('timeline-container');
+  const resultDisplay = document.getElementById('result');
+  const scoreDisplay = document.getElementById('score');
+  const shareContainer = document.getElementById('share-container');
+  const shareButton = document.getElementById('share-button');
+  
+  // Historical events game data
+  const historicalEvents = [
+    {
+      year: 1215,
+      event: "King John signed the Magna Carta in England",
+      fullText: "<b>1215</b>, King John signed the Magna Carta in England",
+      color: "#3498db" // Original blue
+    },
+    {
+      year: 1492,
+      event: "Christopher Columbus arrived in the Americas",
+      fullText: "<b>1492</b>, Christopher Columbus arrived in the Americas",
+      color: "#2980b9" // Darker blue
+    },
+    {
+      year: 1776,
+      event: "the United States declared its independence from Britain",
+      fullText: "<b>1776</b>, the United States declared its independence from Britain",
+      color: "#27ae60" // Green
+    },
+    {
+      year: 1903,
+      event: "the Wright Brothers made the first successful airplane flight",
+      fullText: "<b>1903</b>, the Wright Brothers made the first successful airplane flight",
+      color: "#8e44ad" // Purple
+    },
+    {
+      year: 1969,
+      event: "Neil Armstrong became the first person to walk on the Moon",
+      fullText: "<b>1969</b>, Neil Armstrong became the first person to walk on the Moon",
+      color: "#d35400" // Orange
     }
-
-    function addSquare(index) {
-        if (index >= triviaData.length) return;
-
-        const square = document.createElement('div');
-        square.classList.add('square', 'active');
-        square.innerText = triviaData[index].text;
-        square.dataset.index = index;
-        square.style.left = `${(window.innerWidth - 300) / 2}px`;
-        square.style.top = `${100}px`;
-        container.appendChild(square);
-        squares.push(square);
-        activeSquare = square;
-
-        // Add touch and mouse event listeners
-        square.addEventListener('touchstart', onTouchStart, { passive: false });
-        square.addEventListener('touchmove', onTouchMove, { passive: false });
-        square.addEventListener('touchend', onTouchEnd, { passive: false });
-        square.addEventListener('mousedown', onMouseDown);
-    }
-
-    function onTouchStart(e) {
-        e.preventDefault();
-        activeSquare.style.transition = 'none';
-    }
-
-    function onTouchMove(e) {
-        e.preventDefault();
-        const touch = e.touches[0];
-        const x = touch.clientX - activeSquare.offsetWidth / 2;
-        const y = touch.clientY - activeSquare.offsetHeight / 2;
-        activeSquare.style.left = `${x}px`;
-        activeSquare.style.top = `${y}px`;
-    }
-
-    function onTouchEnd(e) {
-        e.preventDefault();
-        tapButton.classList.add('visible');
-        tapButton.onclick = () => placeSquare();
-    }
-
-    // Mouse support for desktop testing
-    function onMouseDown(e) {
-        e.preventDefault();
-        activeSquare.style.transition = 'none';
-
-        const onMouseMove = (moveEvent) => {
-            const x = moveEvent.clientX - activeSquare.offsetWidth / 2;
-            const y = moveEvent.clientY - activeSquare.offsetHeight / 2;
-            activeSquare.style.left = `${x}px`;
-            activeSquare.style.top = `${y}px`;
-        };
-
-        const onMouseUp = () => {
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-            tapButton.classList.add('visible');
-            tapButton.onclick = () => placeSquare();
-        };
-
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onMouseUp);
-    }
-
-    function placeSquare() {
-        if (!activeSquare) return; // Prevent multiple clicks
-
-        tapButton.classList.remove('visible');
-        tapButton.onclick = null; // Clear previous onclick to avoid stacking
-
-        const index = parseInt(activeSquare.dataset.index);
-        const correctY = triviaData[index].correctY;
-        const currentY = parseFloat(activeSquare.style.top) || 0;
-
-        const tolerance = 50;
-        const isCorrect = Math.abs(currentY - correctY) <= tolerance;
-
-        showScore(isCorrect, activeSquare);
-        activeSquare.classList.remove('active');
-        activeSquare.classList.add('locked');
-
-        if (!isCorrect) {
-            activeSquare.style.transition = 'top 0.5s ease-in-out';
-            activeSquare.style.top = `${correctY}px`;
+  ];
+  
+  // Sort events by year
+  const sortedEvents = [...historicalEvents].sort((a, b) => a.year - b.year);
+  
+  // Score and game state
+  let score = 0;
+  let currentMode;
+  let touchY; // Track touch position
+  let remainingEvents = [];
+  let placedFirstEvent = false;
+  let lastHoveredIndex = -1; // Track the last hovered index for smoother animations
+  let draggedElement = null; // The currently dragged element
+  let isDraggingActive = false; // Track if we're currently dragging
+  let stackedEvents = []; // Track stacked events in source
+  
+  // Initialize drag and drop
+  function initDragAndDrop() {
+    const draggables = document.querySelectorAll('.item:not(.placed)');
+    
+    // For desktop drag and drop
+    draggables.forEach(draggable => {
+      draggable.addEventListener('dragstart', (e) => {
+        draggedElement = draggable;
+        isDraggingActive = true;
+        draggable.classList.add('dragging');
+        
+        // Create a semi-transparent ghost image for better visual feedback
+        if (e.dataTransfer) {
+          e.dataTransfer.effectAllowed = 'move';
+          // Make the drag image a bit transparent to see underneath
+          draggable.style.opacity = '0.4';
         }
+        
+        // Add visual indicator to possible drop targets
+        if (draggable.parentNode === sourceContainer) {
+          timelineContainer.classList.add('highlight-dropzone');
+        }
+        
+        // Remember original sizes for animation
+        rememberOriginalSizes();
 
-        const nextIndex = index + 1;
-        activeSquare = null;
-        setTimeout(() => addSquare(nextIndex), 1000);
+        // If dragging from source, reveal next item in stack
+        if (draggable.parentNode === sourceContainer && draggable.classList.contains('top-of-stack')) {
+          revealNextInStack();
+        }
+      });
+      
+      draggable.addEventListener('dragend', () => {
+        // If we dropped outside the timeline, return to stack
+        if (draggedElement && draggedElement.parentNode !== timelineContainer && 
+            draggedElement.parentNode !== sourceContainer) {
+          returnToStack(draggedElement);
+        }
+        
+        draggedElement = null;
+        isDraggingActive = false;
+        draggable.classList.remove('dragging');
+        draggable.style.opacity = '1';
+        timelineContainer.classList.remove('highlight-dropzone');
+        lastHoveredIndex = -1;
+        
+        // Reset all animations
+        resetItemsAnimation();
+        checkEmpty();
+      });
+      
+      // Add touch events for mobile
+      draggable.addEventListener('touchstart', handleTouchStart, { passive: false });
+      draggable.addEventListener('touchmove', handleTouchMove, { passive: false });
+      draggable.addEventListener('touchend', handleTouchEnd);
+    });
+    
+    // For desktop
+    sourceContainer.addEventListener('dragover', e => {
+      e.preventDefault();
+    });
+    
+    timelineContainer.addEventListener('dragenter', (e) => {
+      e.preventDefault();
+      if (!isDraggingActive) return;
+      timelineContainer.classList.add('active-dropzone');
+    });
+    
+    timelineContainer.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      if (!isDraggingActive) return;
+      
+      // Only remove the active class if we're leaving the container
+      const relatedTarget = e.relatedTarget;
+      if (!timelineContainer.contains(relatedTarget)) {
+        timelineContainer.classList.remove('active-dropzone');
+      }
+    });
+    
+    timelineContainer.addEventListener('dragover', e => {
+      e.preventDefault();
+      if (!draggedElement) return;
+      
+      const afterElement = getDragAfterElement(timelineContainer, e.clientY);
+      const draggable = draggedElement;
+      
+      // Find the index we're hovering over
+      const timelineItems = [...timelineContainer.querySelectorAll('.item:not(.dragging)')];
+      let hoverIndex = afterElement ? timelineItems.indexOf(afterElement) : timelineItems.length;
+      
+      // Only animate if we're hovering at a different position
+      if (hoverIndex !== lastHoveredIndex) {
+        animateItemsToMakeSpace(hoverIndex, timelineItems);
+        lastHoveredIndex = hoverIndex;
+      }
+      
+      if (draggable && draggable.parentNode === sourceContainer) {
+        // Moving from source to timeline
+        if (timelineItems.length === 1 && timelineContainer.querySelector('.timeline-centering-wrapper')) {
+          // If there's only one item in a wrapper, remove the wrapper and add items directly
+          const wrapper = timelineContainer.querySelector('.timeline-centering-wrapper');
+          const firstItem = wrapper.querySelector('.item');
+          
+          // Move the first item out of the wrapper
+          timelineContainer.appendChild(firstItem);
+          wrapper.remove();
+          
+          // Then add the new item
+          if (afterElement == null) {
+            timelineContainer.appendChild(draggable);
+          } else {
+            timelineContainer.insertBefore(draggable, afterElement);
+          }
+        } else {
+          // Normal case - just add to the timeline
+          if (afterElement == null) {
+            timelineContainer.appendChild(draggable);
+          } else {
+            timelineContainer.insertBefore(draggable, afterElement);
+          }
+        }
+        
+        placedFirstEvent = true;
+        
+        // Add a class to identify items in the timeline
+        draggable.classList.add('timeline-item');
+        
+        // Add the TAP TO PLACE button
+        addTapToPlaceButton(draggable);
+      } else if (draggable && draggable.parentNode === timelineContainer) {
+        // Reordering within timeline - no additional points for this
+        if (afterElement == null) {
+          timelineContainer.appendChild(draggable);
+        } else {
+          timelineContainer.insertBefore(draggable, afterElement);
+        }
+      }
+    });
+    
+    timelineContainer.addEventListener('drop', (e) => {
+      e.preventDefault();
+      timelineContainer.classList.remove('active-dropzone');
+      timelineContainer.classList.remove('highlight-dropzone');
+      
+      // Reset animations after drop
+      resetItemsAnimation();
+      
+      // We already moved the element in dragover, so just cleanup here
+      if (draggedElement) {
+        draggedElement.style.opacity = '1';
+        draggedElement = null;
+        isDraggingActive = false;
+      }
+    });
+  }
+
+  // Reveals the next event in the stack
+  function revealNextInStack() {
+    if (stackedEvents.length > 0) {
+      const nextEvent = stackedEvents.shift();
+      const topItemElement = document.createElement('div');
+      topItemElement.className = 'item top-of-stack';
+      topItemElement.textContent = nextEvent.event;
+      topItemElement.draggable = true;
+      topItemElement.dataset.year = nextEvent.year;
+      topItemElement.dataset.fullText = nextEvent.fullText;
+      topItemElement.dataset.color = nextEvent.color;
+      topItemElement.style.backgroundColor = nextEvent.color;
+      sourceContainer.appendChild(topItemElement);
+      
+      // Initialize drag for this new element
+      initDragForItem(topItemElement);
     }
+  }
 
-    function showScore(isCorrect, square) {
-        const scoreEl = document.createElement('div');
-        scoreEl.classList.add('score', isCorrect ? 'correct' : 'incorrect');
-        scoreEl.innerText = isCorrect ? '+10' : '0';
-        scoreEl.style.left = `${parseFloat(square.style.left) + square.offsetWidth / 2 - 20}px`;
-        scoreEl.style.top = `${parseFloat(square.style.top) + square.offsetHeight / 2 - 20}px`;
-        container.appendChild(scoreEl);
+  // Initialize drag events for a single item
+  function initDragForItem(item) {
+    // Skip if already placed
+    if (item.classList.contains('placed')) return;
+    
+    item.addEventListener('dragstart', (e) => {
+      draggedElement = item;
+      isDraggingActive = true;
+      item.classList.add('dragging');
+      
+      if (e.dataTransfer) {
+        e.dataTransfer.effectAllowed = 'move';
+        item.style.opacity = '0.4';
+      }
+      
+      timelineContainer.classList.add('highlight-dropzone');
+      rememberOriginalSizes();
+      
+      if (item.parentNode === sourceContainer && item.classList.contains('top-of-stack')) {
+        revealNextInStack();
+      }
+    });
+    
+    item.addEventListener('dragend', () => {
+      if (draggedElement && draggedElement.parentNode !== timelineContainer && 
+          draggedElement.parentNode !== sourceContainer) {
+        returnToStack(draggedElement);
+      }
+      
+      draggedElement = null;
+      isDraggingActive = false;
+      item.classList.remove('dragging');
+      item.style.opacity = '1';
+      timelineContainer.classList.remove('highlight-dropzone');
+      lastHoveredIndex = -1;
+      
+      resetItemsAnimation();
+      checkEmpty();
+    });
+    
+    item.addEventListener('touchstart', handleTouchStart, { passive: false });
+    item.addEventListener('touchmove', handleTouchMove, { passive: false });
+    item.addEventListener('touchend', handleTouchEnd);
+  }
 
-        if (isCorrect) score += 10;
-
-        setTimeout(() => scoreEl.remove(), 1000);
+  // Add the TAP TO PLACE button to an item
+  function addTapToPlaceButton(item) {
+    // Only add if it doesn't already have one
+    if (!item.querySelector('.tap-button')) {
+      const tapButton = document.createElement('div');
+      tapButton.className = 'tap-button';
+      tapButton.textContent = 'TAP TO PLACE';
+      
+      tapButton.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent event bubbling
+        finalizeItemPlacement(item);
+      });
+      
+      item.appendChild(tapButton);
     }
+  }
 
-    startGame();
-});
+  // Handle finalizing the placement of an item
+  function finalizeItemPlacement(item) {
+    // Remove the timeline-item class which enabled the tap button
+    item.classList.remove('timeline-item');
+    // Remove the button
+    const tapButton = item.querySelector('.tap-button');
+    if (tapButton) {
+      tapButton.remove();
+    }
+    
+    // Get the current position in the timeline
+    const timelineItems = [...timelineContainer.querySelectorAll('.item')];
+    const placedIndex = timelineItems.indexOf(item);
+    
+    // Find the correct position for this item
+    const yearToCheck = parseInt(item.dataset.year);
+    let isCorrect = false;
+    let correctIndex = -1;
+    
+    // Determine if placement is correct and find the correct index
+    if (timelineItems.length === 1) {
+      // If it's the only item, it's correct
+      isCorrect = true;
+    } else {
+      // Get all years to determine correct position
+      const allYears = timelineItems.map(i => parseInt(i.dataset.year));
+      allYears.sort((a, b) => a - b);
+      correctIndex = allYears.indexOf(yearToCheck);
+      
+      // Check if the current position is correct
+      if (placedIndex === 0) {
+        // If it's at the beginning, check if it's before the next item
+        const nextItemYear = parseInt(timelineItems[1].dataset.year);
+        isCorrect = yearToCheck < nextItemYear;
+      } else if (placedIndex === timelineItems.length - 1) {
+        // If it's at the end, check if it's after the previous item
+        const prevItemYear = parseInt(timelineItems[placedIndex - 1].dataset.year);
+        isCorrect = yearToCheck > prevItemYear;
+      } else {
+        // If it's in the middle, check both sides
+        const prevItemYear = parseInt(timelineItems[placedIndex - 1].dataset.year);
+        const nextItemYear = parseInt(timelineItems[placedIndex + 1].dataset.year);
+        isCorrect = yearToCheck > prevItemYear && yearToCheck < nextItemYear;
+      }
+    }
+    
+    // Mark the item as placed and disable dragging
+    item.classList.add('placed');
+    item.draggable = false;
+    
+    // Update score and display feedback
+    if (isCorrect) {
+      score += 100;
+      updateScore();
+      showFeedback('Correct! +100 points', 'correct');
+      
+      // Replace the text with full version including bold year
+      item.innerHTML = item.dataset.fullText;
+      // Ensure the color is preserved
+      item.style.backgroundColor = item.dataset.color;
+      
+      // Add fireworks animation
+      createFireworks(item);
+    } else {
+      showFeedback('Incorrect placement! No points', 'incorrect');
+      
+      // Show full text
+      item.innerHTML = item.dataset.fullText;
+      item.style.backgroundColor = item.dataset.color;
+      
+      // Show thumbs down animation
+      createThumbsDown(item);
+      
+      // Always move item to its correct position after showing feedback
+      setTimeout(() => {
+        moveItemToCorrectPosition(item, timelineItems);
+      }, 1000); // Small delay so user can see the animation
+    }
+    
+    // Check if this was the last item to be placed
+    setTimeout(() => {
+      checkGameCompletion();
+    }, 1500); // Check after animations have completed
+  }
+
+  // Create fireworks animation around an item
+  function createFireworks(item) {
+    // Create container for the fireworks
+    const fireworksContainer = document.createElement('div');
+    fireworksContainer.className = 'fireworks-container';
+    item.appendChild(fireworksContainer);
+    
+    // Create multiple firework particles
+    const colors = ['#e74c3c', '#f1c40f', '#2ecc71', '#3498db', '#9b59b6', '#ff9ff3', '#feca57', '#ff6b6b'];
+    const particleCount = 28; // Reduced particle count by another 25%
+    
+    for (let i = 0; i < particleCount; i++) {
+      const firework = document.createElement('div');
+      firework.className = 'firework';
+      
+      // Random position and color
+      const angle = Math.random() * Math.PI * 2;
+      const distance = 39.4 + Math.random() * 45; // Reduced distance by another 25%
+      const x = Math.cos(angle) * distance;
+      const y = Math.sin(angle) * distance;
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      
+      firework.style.setProperty('--x', `${x}px`);
+      firework.style.setProperty('--y', `${y}px`);
+      firework.style.backgroundColor = color;
+      
+      // Add slight delay for more realistic effect
+      firework.style.animationDelay = `${Math.random() * 0.3}s`;
+      
+      fireworksContainer.appendChild(firework);
+    }
+    
+    // Create a second wave of fireworks for more impact
+    setTimeout(() => {
+      for (let i = 0; i < 11; i++) { // Reduced second wave count by another 25%
+        const firework = document.createElement('div');
+        firework.className = 'firework';
+        
+        // Random position and color
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 28.1 + Math.random() * 33.8; // Reduced distance by another 25%
+        const x = Math.cos(angle) * distance;
+        const y = Math.sin(angle) * distance;
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        
+        firework.style.setProperty('--x', `${x}px`);
+        firework.style.setProperty('--y', `${y}px`);
+        firework.style.backgroundColor = color;
+        
+        fireworksContainer.appendChild(firework);
+      }
+    }, 200);
+    
+    // Remove fireworks container after animation completes
+    setTimeout(() => {
+      if (fireworksContainer.parentNode === item) {
+        item.removeChild(fireworksContainer);
+      }
+    }, 1800); // Slightly reduced animation duration
+  }
+
+  // Create thumbs down animation for incorrect placement
+  function createThumbsDown(item) {
+    const thumbsDown = document.createElement('div');
+    thumbsDown.className = 'thumbs-down';
+    thumbsDown.innerHTML = '👎';
+    
+    // Position at center of the item
+    item.style.position = 'relative';
+    item.appendChild(thumbsDown);
+    
+    // Remove after animation completes
+    setTimeout(() => {
+      if (thumbsDown.parentNode === item) {
+        item.removeChild(thumbsDown);
+      }
+    }, 1200);
+  }
+
+  // Move item to its correct position in the timeline
+  function moveItemToCorrectPosition(item, timelineItems) {
+    const yearToCheck = parseInt(item.dataset.year);
+    
+    // Sort items by year, excluding the item we're moving
+    const sortedItems = [...timelineItems].filter(i => i !== item)
+      .sort((a, b) => parseInt(a.dataset.year) - parseInt(b.dataset.year));
+    
+    // Find where to insert our item based on its year
+    let insertAfterElement = null;
+    let targetPosition;
+    
+    // First, calculate the position where the item should go
+    for (let i = 0; i < sortedItems.length; i++) {
+      if (parseInt(sortedItems[i].dataset.year) > yearToCheck) {
+        // This will be the insertion point
+        targetPosition = i === 0 ? sortedItems[0] : sortedItems[i-1].nextSibling;
+        break;
+      }
+      insertAfterElement = sortedItems[i];
+    }
+    
+    // If we didn't find a position, it should be placed last
+    if (!targetPosition && insertAfterElement) {
+      targetPosition = insertAfterElement.nextSibling;
+    } else if (!targetPosition) {
+      // If timeline is empty (shouldn't happen), append to container
+      targetPosition = null; // null means append to the end
+    }
+    
+    // Get the item's dimensions and position for the animation
+    const itemRect = item.getBoundingClientRect();
+    const itemStyles = window.getComputedStyle(item);
+    const originalPosition = itemStyles.position;
+    const originalZIndex = itemStyles.zIndex;
+    
+    // Store the item's original content and appearance
+    const originalContent = item.innerHTML;
+    const originalColor = item.style.backgroundColor;
+    
+    // Step 1: Shrink the item in its current position
+    item.style.position = 'fixed';
+    item.style.top = `${itemRect.top}px`;
+    item.style.left = `${itemRect.left}px`;
+    item.style.width = `${itemRect.width}px`;
+    item.style.height = `${itemRect.height}px`;
+    item.style.zIndex = '1000';
+    item.style.transformOrigin = 'center center';
+    
+    // Create a placeholder at the current position to maintain layout
+    const currentPlaceholder = document.createElement('div');
+    currentPlaceholder.style.width = `${itemRect.width}px`;
+    currentPlaceholder.style.height = `${itemRect.height}px`;
+    currentPlaceholder.style.margin = '4px 0';
+    currentPlaceholder.style.opacity = '0';
+    
+    // Insert placeholder at current position
+    item.parentNode.insertBefore(currentPlaceholder, item);
+    
+    // Remove item from the DOM flow for animation
+    document.body.appendChild(item);
+    
+    // Add the shrinking animation class
+    item.classList.add('shrinking');
+    
+    // Step 2: After shrinking, create and animate the highlight at the target position
+    setTimeout(() => {
+      // Remove the current placeholder
+      if (currentPlaceholder.parentNode) {
+        currentPlaceholder.parentNode.removeChild(currentPlaceholder);
+      }
+      
+      // Create a placeholder for the target position with a highlight effect
+      const targetPlaceholder = document.createElement('div');
+      targetPlaceholder.className = 'highlight-slot';
+      targetPlaceholder.style.width = `${itemRect.width}px`;
+      targetPlaceholder.style.height = `${itemRect.height}px`;
+      targetPlaceholder.style.margin = '4px 0';
+      
+      // Insert the highlighted placeholder at the target position
+      if (targetPosition) {
+        timelineContainer.insertBefore(targetPlaceholder, targetPosition);
+      } else {
+        timelineContainer.appendChild(targetPlaceholder);
+      }
+      
+      // Get the target position for the expanding animation
+      const targetRect = targetPlaceholder.getBoundingClientRect();
+      
+      // Step 3: Move the shrunken item to the new position (invisible) and prepare for expansion
+      item.style.opacity = '0';
+      item.style.top = `${targetRect.top}px`;
+      item.style.left = `${targetRect.left}px`;
+      item.classList.remove('shrinking');
+      
+      // Wait a moment before proceeding with the DOM insertion
+      setTimeout(() => {
+        // Remove the highlight placeholder when we're ready to insert the real item
+        if (targetPlaceholder.parentNode) {
+          targetPlaceholder.parentNode.removeChild(targetPlaceholder);
+        }
+        
+        // Insert the actual item at the correct position in the DOM
+        if (targetPosition) {
+          timelineContainer.insertBefore(item, targetPosition);
+        } else {
+          timelineContainer.appendChild(item);
+        }
+        
+        // Pause briefly to ensure the DOM updates before starting the expansion animation
+        setTimeout(() => {
+          // Step 4: Expand the item at the new position
+          item.style.position = 'relative';
+          item.style.top = '';
+          item.style.left = '';
+          item.style.width = '';
+          item.style.height = '';
+          item.style.opacity = '1'; // Make sure it's visible
+          item.classList.add('expanding');
+          
+          // Restore the original content with any modifications
+          item.innerHTML = originalContent;
+          item.style.backgroundColor = originalColor;
+          
+          // Make sure the item is in the timeline and visible
+          if (!timelineContainer.contains(item)) {
+            console.log("Item not in container, reinserting");
+            if (targetPosition) {
+              timelineContainer.insertBefore(item, targetPosition);
+            } else {
+              timelineContainer.appendChild(item);
+            }
+          }
+          
+          // Reset styles after expansion is complete
+          setTimeout(() => {
+            item.style.zIndex = originalZIndex;
+            item.classList.remove('expanding');
+            
+            // Make sure item is still visible
+            item.style.opacity = '1';
+            item.style.display = 'block';
+            
+            // Add the final highlight effect
+            item.classList.add('highlight-position');
+            setTimeout(() => {
+              item.classList.remove('highlight-position');
+            }, 1000);
+          }, 600); // Match with the expandIn animation duration
+        }, 10);
+      }, 50);
+    }, 500); // Match with the shrinkAway animation duration
+  }
+
+  // Update score display
+  function updateScore() {
+    scoreDisplay.textContent = score;
+  }
+
+  // Show feedback briefly
+  function showFeedback(message, className) {
+    resultDisplay.textContent = message;
+    resultDisplay.className = className;
+    
+    // Clear after 2 seconds
+    setTimeout(() => {
+      resultDisplay.textContent = '';
+      resultDisplay.className = '';
+    }, 2000);
+  }
+
+  // Return an item to the stack if dropped outside a valid container
+  function returnToStack(item) {
+    // Create an event object to put back in the stack
+    const returnedEvent = {
+      year: item.dataset.year,
+      event: item.textContent,
+      fullText: item.dataset.fullText,
+      color: item.dataset.color
+    };
+    
+    // Add at beginning to be next up
+    stackedEvents.unshift(returnedEvent);
+    
+    // Remove the dragged element
+    if (item.parentNode) {
+      item.parentNode.removeChild(item);
+    }
+    
+    // Ensure there's always a top item visible
+    if (sourceContainer.querySelectorAll('.item').length === 0 && stackedEvents.length > 0) {
+      revealNextInStack();
+    }
+  }
+  
+  // Remember original positions of items for smooth animations
+  function rememberOriginalSizes() {
+    const timelineItems = [...timelineContainer.querySelectorAll('.item')];
+    timelineItems.forEach(item => {
+      if (!item.dataset.originalHeight) {
+        item.dataset.originalHeight = `${item.offsetHeight}px`;
+      }
+    });
+  }
+  
+  // Animate items to make space for dragged item
+  function animateItemsToMakeSpace(hoverIndex, items) {
+    // Reset any previous animations
+    resetItemsAnimation();
+    
+    // Apply smooth transitions
+    items.forEach((item, index) => {
+      if (index >= hoverIndex) {
+        // Move items below hover point down
+        item.style.transform = 'translateY(10px)';
+        item.style.transition = 'transform 0.2s ease-out';
+      } else {
+        // Reset items above hover point
+        item.style.transform = 'translateY(0)';
+        item.style.transition = 'transform 0.2s ease-out';
+      }
+    });
+  }
+  
+  // Reset all animation styles
+  function resetItemsAnimation() {
+    const allItems = [
+      ...sourceContainer.querySelectorAll('.item'),
+      ...timelineContainer.querySelectorAll('.item')
+    ];
+    
+    allItems.forEach(item => {
+      item.style.transform = '';
+      // Use a short delay before removing transition to let animations complete
+      setTimeout(() => {
+        item.style.transition = '';
+      }, 200);
+    });
+  }
+  
+  // Touch event handlers for mobile
+  function handleTouchStart(e) {
+    e.preventDefault();
+    const touch = e.touches[0];
+    touchY = touch.clientY;
+    
+    draggedElement = this;
+    isDraggingActive = true;
+    this.classList.add('dragging');
+    
+    // Create a ghost image for better visual feedback
+    this.style.opacity = '0.6';
+    
+    // Highlight potential drop zone
+    if (this.parentNode === sourceContainer) {
+      timelineContainer.classList.add('highlight-dropzone');
+      
+      // If dragging from source, reveal next item in stack
+      if (this.classList.contains('top-of-stack')) {
+        revealNextInStack();
+      }
+    }
+    
+    // Remember original sizes for animation
+    rememberOriginalSizes();
+  }
+  
+  function handleTouchMove(e) {
+    e.preventDefault();
+    if (!isDraggingActive || !e.target.classList.contains('dragging') || e.target.classList.contains('placed')) return;
+    
+    const touch = e.touches[0];
+    const currentY = touch.clientY;
+    
+    // Check if we're hovering over the timeline container
+    const timelineRect = timelineContainer.getBoundingClientRect();
+    const isOverTimeline = 
+      currentY >= timelineRect.top && 
+      currentY <= timelineRect.bottom;
+    
+    if (isOverTimeline) {
+      timelineContainer.classList.add('active-dropzone');
+      
+      const draggable = draggedElement;
+      const afterElement = getDragAfterElement(timelineContainer, currentY);
+      
+      // Find the index we're hovering over for animation
+      const timelineItems = [...timelineContainer.querySelectorAll('.item:not(.dragging)')];
+      let hoverIndex = afterElement ? timelineItems.indexOf(afterElement) : timelineItems.length;
+      
+      // Only animate if we're hovering at a different position
+      if (hoverIndex !== lastHoveredIndex) {
+        animateItemsToMakeSpace(hoverIndex, timelineItems);
+        lastHoveredIndex = hoverIndex;
+      }
+      
+      if (draggable) {
+        if (draggable.parentNode === sourceContainer) {
+          // Moving from source to timeline
+          if (timelineItems.length === 1 && timelineContainer.querySelector('.timeline-centering-wrapper')) {
+            // If there's only one item in a wrapper, remove the wrapper and add items directly
+            const wrapper = timelineContainer.querySelector('.timeline-centering-wrapper');
+            const firstItem = wrapper.querySelector('.item');
+            
+            // Move the first item out of the wrapper
+            timelineContainer.appendChild(firstItem);
+            wrapper.remove();
+            
+            // Then add the new item
+            if (afterElement == null) {
+              timelineContainer.appendChild(draggable);
+            } else {
+              timelineContainer.insertBefore(draggable, afterElement);
+            }
+          } else {
+            // Normal case - just add to the timeline
+            if (afterElement == null) {
+              timelineContainer.appendChild(draggable);
+            } else {
+              timelineContainer.insertBefore(draggable, afterElement);
+            }
+          }
+          
+          placedFirstEvent = true;
+          
+          // Add a class to identify items in the timeline
+          draggable.classList.add('timeline-item');
+          
+          // Add the TAP TO PLACE button
+          addTapToPlaceButton(draggable);
+        } else if (draggable.parentNode === timelineContainer) {
+          // Reordering within timeline
+          if (afterElement == null) {
+            timelineContainer.appendChild(draggable);
+          } else if (afterElement !== draggable) {
+            timelineContainer.insertBefore(draggable, afterElement);
+          }
+        }
+      }
+    } else {
+      timelineContainer.classList.remove('active-dropzone');
+      resetItemsAnimation();
+    }
+    
+    touchY = currentY;
+  }
+  
+  function handleTouchEnd(e) {
+    // If we dropped outside the timeline, return to stack
+    if (draggedElement && draggedElement.parentNode !== timelineContainer && 
+        draggedElement.parentNode !== sourceContainer) {
+      returnToStack(draggedElement);
+    }
+    
+    this.classList.remove('dragging');
+    this.style.opacity = '1';
+    
+    timelineContainer.classList.remove('active-dropzone');
+    timelineContainer.classList.remove('highlight-dropzone');
+    
+    // Reset animations
+    resetItemsAnimation();
+    
+    draggedElement = null;
+    isDraggingActive = false;
+    lastHoveredIndex = -1;
+    checkEmpty();
+  }
+  
+  // Get element to insert dragged item after
+  function getDragAfterElement(container, y) {
+    const draggableElements = [...container.querySelectorAll('.item:not(.dragging)')];
+    
+    // If there's only one item in the timeline and we're not already dragging within the timeline,
+    // maintain the centered appearance by placing new items after the first item
+    if (container === timelineContainer && 
+        draggableElements.length === 1 && 
+        draggedElement && 
+        draggedElement.parentNode !== timelineContainer) {
+      const firstItem = draggableElements[0];
+      const box = firstItem.getBoundingClientRect();
+      const midpoint = box.top + box.height / 2;
+      
+      // If we're dragging above the midpoint of the first item, place before it
+      // Otherwise place after it
+      if (y < midpoint) {
+        return firstItem;
+      } else {
+        return null;
+      }
+    }
+    
+    return draggableElements.reduce((closest, child) => {
+      const box = child.getBoundingClientRect();
+      const offset = y - box.top - box.height / 2;
+      
+      if (offset < 0 && offset > closest.offset) {
+        return { offset: offset, element: child };
+      } else {
+        return closest;
+      }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+  }
+  
+  // Check if the timeline is empty and update the class accordingly
+  function checkEmpty() {
+    if (timelineContainer.querySelectorAll('.item').length === 0) {
+      timelineContainer.classList.add('empty');
+      placedFirstEvent = false;
+    } else {
+      timelineContainer.classList.remove('empty');
+    }
+  }
+  
+  // Start a new game
+  function startNewGame() {
+    // Clear previous game
+    sourceContainer.innerHTML = '';
+    timelineContainer.innerHTML = '';
+    resultDisplay.textContent = '';
+    resultDisplay.className = '';
+    
+    // Reset score and variables
+    score = 0;
+    updateScore();
+    lastHoveredIndex = -1;
+    draggedElement = null;
+    isDraggingActive = false;
+    stackedEvents = [];
+    
+    // Select game mode (always use 'Show Years' for timeline items)
+    currentMode = {
+      name: 'Stack Game',
+      displayFormat: (event) => event.fullText,
+      instruction: 'Drag events from the stack and place them in chronological order. Get 100 points for correct placement!',
+    };
+    document.getElementById('instruction').textContent = currentMode.instruction;
+    
+    // Add first event to the timeline container (the earliest one)
+    const firstEvent = sortedEvents[0];
+    const firstEventElement = document.createElement('div');
+    firstEventElement.className = 'item placed'; // Already placed and confirmed
+    firstEventElement.innerHTML = firstEvent.fullText; // Display with HTML for bold year
+    firstEventElement.draggable = true;
+    firstEventElement.dataset.year = firstEvent.year;
+    firstEventElement.dataset.fullText = firstEvent.fullText;
+    firstEventElement.dataset.color = firstEvent.color;
+    firstEventElement.style.backgroundColor = firstEvent.color;
+    
+    // Create a wrapper div for vertical centering (when only one item is present)
+    const timelineWrapper = document.createElement('div');
+    timelineWrapper.className = 'timeline-centering-wrapper';
+    timelineWrapper.appendChild(firstEventElement);
+    timelineContainer.appendChild(timelineWrapper);
+    
+    // Add remaining events to stack in reverse order (so oldest is picked first)
+    remainingEvents = [...historicalEvents]
+      .filter(event => event.year !== firstEvent.year)
+      .sort((a, b) => a.year - b.year);
+    
+    // Store all remaining events except the top one in stackedEvents
+    stackedEvents = remainingEvents.slice(0, remainingEvents.length - 1);
+    
+    // Create the visible top stack item
+    if (remainingEvents.length > 0) {
+      const topEvent = remainingEvents[remainingEvents.length - 1];
+      const topItemElement = document.createElement('div');
+      topItemElement.className = 'item top-of-stack';
+      topItemElement.textContent = topEvent.event; // Only show event text, not year
+      topItemElement.draggable = true;
+      topItemElement.dataset.year = topEvent.year;
+      topItemElement.dataset.fullText = topEvent.fullText;
+      topItemElement.dataset.color = topEvent.color;
+      topItemElement.style.backgroundColor = topEvent.color;
+      sourceContainer.appendChild(topItemElement);
+      
+      // Show stack count
+      updateStackCount();
+    }
+    
+    // Make sure timeline doesn't show empty message
+    timelineContainer.classList.remove('empty');
+    placedFirstEvent = true;
+    
+    // Initialize drag and drop
+    initDragAndDrop();
+  }
+  
+  // Update the stack count indicator
+  function updateStackCount() {
+    const count = stackedEvents.length + (sourceContainer.querySelectorAll('.item').length);
+    if (document.getElementById('stack-count')) {
+      document.getElementById('stack-count').textContent = count;
+    }
+  }
+  
+  // Fisher-Yates shuffle algorithm
+  function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
+  
+  // Check if all events have been placed and show the share button if needed
+  function checkGameCompletion() {
+    // Count items in the timeline
+    const placedItems = timelineContainer.querySelectorAll('.item.placed');
+    const unplacedItems = timelineContainer.querySelectorAll('.timeline-item').length;
+    
+    // If all events have been placed (all historical events minus any unplaced items)
+    if (placedItems.length === historicalEvents.length && unplacedItems === 0) {
+      // Game is complete - show share button
+      showShareButton();
+      
+      // Also display a success message
+      showFeedback('Timeline complete! Great job!', 'correct');
+    }
+  }
+  
+  // Show the share button and set up its functionality
+  function showShareButton() {
+    // Make share button visible
+    shareContainer.classList.remove('hidden');
+    
+    // Add click event listener
+    shareButton.addEventListener('click', shareScore);
+  }
+  
+  // Share score via the Web Share API if available
+  function shareScore() {
+    const shareText = `I scored ${score} points in the Historical Timeline Game! Can you beat my score?`;
+    const shareUrl = window.location.href;
+    
+    // Check if the Web Share API is available
+    if (navigator.share) {
+      navigator.share({
+        title: 'Historical Timeline Game',
+        text: shareText,
+        url: shareUrl,
+      })
+      .then(() => console.log('Share successful'))
+      .catch((error) => console.log('Error sharing:', error));
+    } else {
+      // Fallback for devices that don't support the Web Share API
+      // Create a shareable link with the text pre-filled
+      const encodedText = encodeURIComponent(shareText);
+      const fallbackUrl = `sms:?&body=${encodedText} ${encodeURIComponent(shareUrl)}`;
+      
+      // Open in a new tab/window
+      window.open(fallbackUrl, '_blank');
+    }
+  }
+  
+  // Call startNewGame directly when page loads instead of hooking up button events
+  startNewGame();
+}); 
