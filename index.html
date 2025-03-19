@@ -28,7 +28,15 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div id="game-content">
+  <div id="intro-screen" class="intro-screen">
+    <div class="intro-content">
+      <h1>Harness History Quiz</h1>
+      <p>Drag events from the top stack and place them in chronological order below. Get 100 points for every correct placement!</p>
+      <button id="continue-button">CONTINUE</button>
+    </div>
+  </div>
+  
+  <div id="game-content" class="game-content hidden">
     <div class="container">
       <h1>Historical Timeline</h1>
       <div class="score-container">
@@ -51,6 +59,7 @@
       </div>
     </div>
   </div>
+  
   <div id="debug-info" style="display: none;"></div>
 
   <script>
@@ -66,6 +75,12 @@
         debugInfo.style.display = 'none';
         debugInfo.remove();
       }
+      
+      // Set up continue button functionality
+      document.getElementById('continue-button').addEventListener('click', function() {
+        document.getElementById('intro-screen').classList.add('hidden');
+        document.getElementById('game-content').classList.remove('hidden');
+      });
     });
   </script>
   <script src="script.js"></script>
