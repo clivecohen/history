@@ -1004,6 +1004,72 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
   
+  // Move item to its correct position in the timeline
+  function moveItemToCorrectPosition(item, timelineItems) {
+    debugLog("Moving item to correct position");
+    
+    const yearToCheck = parseInt(item.dataset.year);
+    
+    // Sort items by year, excluding the item we're moving
+    const sortedItems = [...timelineItems].filter(i => i !== item)
+      .sort((a, b) => parseInt(a.dataset.year) - parseInt(b.dataset.year));
+    
+    // Find the correct position for this item based on its year
+    let targetPosition = null;
+    let insertAfterElement = null;
+    
+    for (let i = 0; i < sortedItems.length; i++) {
+      if (parseInt(sortedItems[i].dataset.year) > yearToCheck) {
+        // This will be the insertion point - place before this item
+        targetPosition = sortedItems[i];
+        break;
+      }
+      insertAfterElement = sortedItems[i];
+    }
+    
+    // Prepare the item for animation
+    item.style.transition = 'transform 0.8s ease-out, opacity 0.2s';
+    item.style.position = 'relative';
+    item.style.zIndex = '100';
+    
+    // First fade out the item
+    item.style.opacity = '0.2';
+    
+    // After a short delay, move the item to the correct position
+    setTimeout(() => {
+      // Remove from current position
+      if (item.parentNode) {
+        item.parentNode.removeChild(item);
+      }
+      
+      // Insert at the correct position
+      if (targetPosition) {
+        timelineContainer.insertBefore(item, targetPosition);
+      } else if (insertAfterElement) {
+        // If no target position but we have an insert after element, place after it
+        if (insertAfterElement.nextSibling) {
+          timelineContainer.insertBefore(item, insertAfterElement.nextSibling);
+        } else {
+          timelineContainer.appendChild(item);
+        }
+      } else {
+        // If timeline is empty or no valid position found, just append
+        timelineContainer.appendChild(item);
+      }
+      
+      // Show a highlight effect at the new position
+      item.style.opacity = '1';
+      item.style.boxShadow = '0 0 15px 5px rgba(46, 204, 113, 0.6)';
+      
+      // Remove the highlight after animation
+      setTimeout(() => {
+        item.style.boxShadow = '';
+        item.style.transition = '';
+      }, 1000);
+      
+    }, 300);
+  }
+  
   // Call startNewGame directly when page loads instead of hooking up button events
   startNewGame();
 }); 
