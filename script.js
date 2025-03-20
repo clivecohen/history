@@ -50,10 +50,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const topStackItem = sourceContainer.querySelector('.top-of-stack');
     if (!topStackItem) return; // Exit if there's no stack item yet
     
-    // Get the position of the stack item
-    const stackItemRect = topStackItem.getBoundingClientRect();
-    const containerRect = document.querySelector('.container').getBoundingClientRect();
-    
     // Create the finger element
     const tutorialFinger = document.createElement('div');
     tutorialFinger.className = 'tutorial-finger';
@@ -67,10 +63,9 @@ document.addEventListener('DOMContentLoaded', () => {
     container.appendChild(tutorialFinger);
     container.appendChild(tutorialSparkle);
     
-    // Position the finger directly on the stack item
-    // We need to calculate the position relative to the container
-    const fingerLeft = (stackItemRect.left + stackItemRect.width/2 - containerRect.left) - 30;
-    tutorialFinger.style.left = `${fingerLeft}px`;
+    // Position the finger at the center of the container, directly over the stack item
+    tutorialFinger.style.left = '50%';
+    tutorialFinger.style.transform = 'translateX(-50%)';
     
     // Highlight the stack item during the animation
     topStackItem.style.transition = 'box-shadow 0.3s ease-in-out';
