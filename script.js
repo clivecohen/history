@@ -630,8 +630,8 @@ document.addEventListener('DOMContentLoaded', () => {
       
       if (index >= hoverIndex) {
         // Move items below hover point down
-        // Use a larger gap for better visibility
-        const moveDistance = isMobile ? 20 : 15; // Increased distance
+        // Use a larger gap for better visibility on mobile
+        const moveDistance = isMobile ? 25 : 15; // Increased distance for mobile
         item.style.transform = `translateY(${moveDistance}px)`;
       } else {
         // Ensure items above hover point are reset
