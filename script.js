@@ -616,8 +616,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Apply animation to items
     items.forEach((item, index) => {
-      // Only skip items that are currently being animated for shrinking/expanding
-      // This allows placed items to move to make space
+      // Skip the item being dragged itself
+      if (item === draggedElement) return;
+      
+      // Skip special animation states
       if (item.classList.contains('shrinking') || 
           item.classList.contains('expanding')) {
         return;
@@ -625,14 +627,15 @@ document.addEventListener('DOMContentLoaded', () => {
       
       // Set transition for smoother animation - use a faster transition for mobile
       const isMobile = 'ontouchstart' in window;
-      const transitionSpeed = isMobile ? '0.15s' : '0.2s'; // Faster transitions
+      const transitionSpeed = isMobile ? '0.1s' : '0.2s'; // Even faster on mobile
       item.style.transition = `transform ${transitionSpeed} ease-out`;
       
       if (index >= hoverIndex) {
         // Move items below hover point down
         // Use a larger gap for better visibility on mobile
-        const moveDistance = isMobile ? 25 : 15; // Increased distance for mobile
+        const moveDistance = isMobile ? 30 : 15; // Increased distance for mobile
         item.style.transform = `translateY(${moveDistance}px)`;
+        debugLog(`Moving item ${index} down by ${moveDistance}px`);
       } else {
         // Ensure items above hover point are reset
         item.style.transform = '';
@@ -648,11 +651,13 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
     
     const isMobile = 'ontouchstart' in window;
-    const resetDelay = isMobile ? 150 : 200; // Faster reset on mobile
+    const resetDelay = isMobile ? 100 : 200; // Even faster reset on mobile
     
     allItems.forEach(item => {
-      // Only skip items that are currently being animated for shrinking/expanding
-      // This allows placed items to move to make space
+      // Skip the item being dragged
+      if (item === draggedElement) return;
+      
+      // Skip special animation states
       if (item.classList.contains('shrinking') || 
           item.classList.contains('expanding')) {
         return;
@@ -660,13 +665,13 @@ document.addEventListener('DOMContentLoaded', () => {
       
       // Ensure transition is set for smooth reset
       if (!item.style.transition) {
-        const transitionSpeed = isMobile ? '0.15s' : '0.2s';
+        const transitionSpeed = isMobile ? '0.1s' : '0.2s';
         item.style.transition = `transform ${transitionSpeed} ease-out`;
       }
       
       item.style.transform = '';
       
-      // Use a shorter delay before removing transition to let animations complete
+      // Use a shorter delay before removing transition
       setTimeout(() => {
         if (!item.classList.contains('dragging')) {
           item.style.transition = '';
@@ -752,14 +757,16 @@ document.addEventListener('DOMContentLoaded', () => {
       // Get the insertion point to animate items
       const afterElement = getDragAfterElement(timelineContainer, currentY);
       
-      // Find the index we're hovering over for animation - IMPORTANT: Exclude the dragging element
-      const timelineItems = [...timelineContainer.querySelectorAll('.item:not(.dragging)')];
+      // Find all timeline items, whether they're placed or not
+      // Critical: Include ALL items in the timeline for animation
+      const timelineItems = [...timelineContainer.querySelectorAll('.item')];
       
       // Calculate hover index
       let hoverIndex = afterElement ? timelineItems.indexOf(afterElement) : timelineItems.length;
       
-      // Always animate items when hovering over timeline, even if index hasn't changed
-      // This ensures smooth animation when moving the dragged item
+      // Always animate items when hovering over timeline
+      // Force animation on every touch move for better mobile responsiveness
+      debugLog(`Touch move over timeline at position ${currentY}, hover index: ${hoverIndex}`);
       animateItemsToMakeSpace(hoverIndex, timelineItems);
       lastHoveredIndex = hoverIndex;
     } else {
@@ -861,8 +868,15 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Get element to insert dragged item after
   function getDragAfterElement(container, y) {
-    // Get all draggable elements except the one being dragged
-    const draggableElements = [...container.querySelectorAll('.item:not(.dragging)')];
+    // Get all draggable elements in the container
+    // For mobile, we need to be more inclusive to ensure we find the right insertion point
+    const isMobile = 'ontouchstart' in window;
+    
+    // On mobile, include all items for better positioning
+    const draggableElements = [...container.querySelectorAll('.item')].filter(item => {
+      // Filter out the currently dragged element if it's in the container
+      return isMobile ? (item !== draggedElement) : !item.classList.contains('dragging');
+    });
     
     // If there are no draggable elements, return null to append at the end
     if (draggableElements.length === 0) return null;
@@ -886,13 +900,13 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
     
-    // Give a slight bias toward inserting after rather than before items on mobile
+    // Give a stronger bias toward inserting after rather than before items on mobile
     // This helps make the touch interaction feel more natural
-    const isMobile = 'ontouchstart' in window;
-    const offsetBias = isMobile ? 5 : 0;
+    const offsetBias = isMobile ? 10 : 0;
     
     return draggableElements.reduce((closest, child) => {
       const box = child.getBoundingClientRect();
+      // Add a stronger bias for mobile
       const offset = y - box.top - box.height / 2 + offsetBias;
       
       if (offset < 0 && offset > closest.offset) {
