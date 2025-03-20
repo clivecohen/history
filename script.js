@@ -1037,7 +1037,58 @@ document.addEventListener('DOMContentLoaded', () => {
       
       // Also display a success message
       showFeedback('Timeline complete! Great job!', 'correct');
+      
+      // Replace Event Stack with Final Score display
+      displayFinalScore();
     }
+  }
+  
+  // Replace the Event Stack with Final Score display
+  function displayFinalScore() {
+    // Hide the regular score display
+    const scoreContainer = document.querySelector('.score-container');
+    if (scoreContainer) {
+      scoreContainer.style.display = 'none';
+    }
+    
+    // Clear the source container (Event Stack)
+    sourceContainer.innerHTML = '';
+    
+    // Change the label above the source container
+    const sourceLabel = document.querySelector('label[for="source-container"]');
+    if (sourceLabel) {
+      sourceLabel.textContent = 'GAME COMPLETE';
+    }
+    
+    // Create final score display
+    const finalScoreDisplay = document.createElement('div');
+    finalScoreDisplay.className = 'final-score-display';
+    
+    const finalScoreTitle = document.createElement('h2');
+    finalScoreTitle.textContent = 'FINAL SCORE';
+    finalScoreTitle.className = 'final-score-title';
+    
+    const finalScoreValue = document.createElement('div');
+    finalScoreValue.textContent = score;
+    finalScoreValue.className = 'final-score-value';
+    
+    // Add a trophy icon
+    const trophyIcon = document.createElement('div');
+    trophyIcon.className = 'trophy-icon';
+    trophyIcon.innerHTML = '🏆';
+    
+    // Assemble the final score display
+    finalScoreDisplay.appendChild(trophyIcon);
+    finalScoreDisplay.appendChild(finalScoreTitle);
+    finalScoreDisplay.appendChild(finalScoreValue);
+    
+    // Add to the source container
+    sourceContainer.appendChild(finalScoreDisplay);
+    
+    // Add a score glow effect for emphasis
+    setTimeout(() => {
+      finalScoreValue.classList.add('score-glow');
+    }, 300);
   }
   
   // Show the share button and set up its functionality
