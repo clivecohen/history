@@ -1117,13 +1117,13 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Share score via the Web Share API if available
   function shareScore() {
-    const shareText = `I scored ${score} points in the Historical Timeline Game! Can you beat my score?`;
+    const shareText = `I scored ${score} points in the Racing Quiz Game! Can you beat my score?`;
     const shareUrl = window.location.href;
     
     // Check if the Web Share API is available
     if (navigator.share) {
       navigator.share({
-        title: 'Historical Timeline Game',
+        title: 'Racing Quiz',
         text: shareText,
         url: shareUrl,
       })
