@@ -352,51 +352,26 @@ document.addEventListener('DOMContentLoaded', () => {
     item.addEventListener('touchend', handleTouchEnd);
   }
 
-  // Add the TAP TO PLACE button to an item
+  // Add TAP TO PLACE button to a timeline item
   function addTapToPlaceButton(item) {
-    // Only add if it doesn't already have one
-    if (!item.querySelector('.tap-button')) {
-      debugLog("Adding TAP TO PLACE button");
-      
-      const tapButton = document.createElement('div');
-      tapButton.className = 'tap-button';
-      tapButton.textContent = 'TAP TO PLACE';
-      
-      // Ensure the button is properly styled
-      tapButton.style.position = 'absolute';
-      tapButton.style.right = '0';
-      tapButton.style.top = '50%';
-      tapButton.style.transform = 'translateY(-50%)';
-      tapButton.style.zIndex = '100';
-      tapButton.style.opacity = '1';
-      tapButton.style.visibility = 'visible';
-      
-      // Use both click and touchend events for better mobile compatibility
-      const handleTap = (e) => {
-        e.preventDefault();
-        e.stopPropagation(); // Prevent event bubbling
-        debugLog("TAP TO PLACE button tapped");
-        
-        // Immediate visual feedback
-        tapButton.style.backgroundColor = '#4CAF50';
-        
-        // Fix the iOS 300ms delay by using setTimeout
-        setTimeout(() => {
-          finalizeItemPlacement(item);
-        }, 10);
-      };
-      
-      tapButton.addEventListener('click', handleTap);
-      tapButton.addEventListener('touchend', handleTap);
-      
-      item.appendChild(tapButton);
-      
-      // Make sure the button is visible
-      setTimeout(() => {
-        tapButton.style.opacity = '1';
-        tapButton.style.visibility = 'visible';
-      }, 50);
-    }
+    // Make the entire item clickable
+    item.classList.add('tappable');
+    
+    // Create the TAP TO PLACE text/button
+    const tapButton = document.createElement('div');
+    tapButton.className = 'tap-button';
+    tapButton.textContent = 'TAP TO PLACE';
+    
+    // Add to item
+    item.appendChild(tapButton);
+    
+    // Make the entire item clickable to place it
+    item.addEventListener('click', (e) => {
+      // Only process if the item is in the timeline and has the tappable class
+      if (item.classList.contains('tappable')) {
+        finalizeItemPlacement(item);
+      }
+    });
   }
 
   // Handle finalizing the placement of an item
@@ -454,6 +429,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Remove the timeline-item class which enabled the tap button
     item.classList.remove('timeline-item');
+    
+    // Remove the tappable class to disable clicking
+    item.classList.remove('tappable');
     
     // Remove the button immediately
     const tapButton = item.querySelector('.tap-button');
