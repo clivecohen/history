@@ -544,6 +544,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // Update score display
   function updateScore() {
     scoreDisplay.textContent = score;
+    
+    // Add glowing effect when score increases
+    scoreDisplay.classList.add('score-glow');
+    
+    // Remove the glow effect after animation completes
+    setTimeout(() => {
+      scoreDisplay.classList.remove('score-glow');
+    }, 1000);
   }
 
   // Show feedback briefly
