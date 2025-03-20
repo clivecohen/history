@@ -16,11 +16,82 @@ document.addEventListener('DOMContentLoaded', () => {
   const continueButton = document.getElementById('continue-button');
   const gameContent = document.getElementById('game-content');
   
+  // Add orientation lock overlay
+  const orientationLock = document.createElement('div');
+  orientationLock.className = 'orientation-lock';
+  
+  const orientationIcon = document.createElement('div');
+  orientationIcon.className = 'orientation-lock-icon';
+  orientationIcon.innerHTML = '📱';
+  
+  const orientationMessage = document.createElement('div');
+  orientationMessage.className = 'orientation-lock-message';
+  orientationMessage.textContent = 'Please rotate your device to portrait mode to play the game';
+  
+  orientationLock.appendChild(orientationIcon);
+  orientationLock.appendChild(orientationMessage);
+  document.body.appendChild(orientationLock);
+  
   // Set up intro screen
   continueButton.addEventListener('click', () => {
     introScreen.classList.add('hidden');
     gameContent.classList.remove('hidden');
+    
+    // Show the tutorial animation after a short delay
+    // Show it every time the game starts
+    setTimeout(() => {
+      showTutorialAnimation();
+    }, 500);
   });
+  
+  // Function to show the finger swipe tutorial
+  function showTutorialAnimation() {
+    // Get the top stack item to position the finger directly on it
+    const topStackItem = sourceContainer.querySelector('.top-of-stack');
+    if (!topStackItem) return; // Exit if there's no stack item yet
+    
+    // Get the position of the stack item
+    const stackItemRect = topStackItem.getBoundingClientRect();
+    const containerRect = document.querySelector('.container').getBoundingClientRect();
+    
+    // Create the finger element
+    const tutorialFinger = document.createElement('div');
+    tutorialFinger.className = 'tutorial-finger';
+    
+    // Create the sparkle effect
+    const tutorialSparkle = document.createElement('div');
+    tutorialSparkle.className = 'tutorial-sparkle';
+    
+    // Add elements to the container
+    const container = document.querySelector('.container');
+    container.appendChild(tutorialFinger);
+    container.appendChild(tutorialSparkle);
+    
+    // Position the finger directly on the stack item
+    // We need to calculate the position relative to the container
+    const fingerLeft = (stackItemRect.left + stackItemRect.width/2 - containerRect.left) - 30;
+    tutorialFinger.style.left = `${fingerLeft}px`;
+    
+    // Highlight the stack item during the animation
+    topStackItem.style.transition = 'box-shadow 0.3s ease-in-out';
+    topStackItem.style.boxShadow = '0 0 10px rgba(52, 152, 219, 0.7)';
+    
+    // Remove tutorial elements after animation completes
+    setTimeout(() => {
+      if (tutorialFinger.parentNode) {
+        tutorialFinger.parentNode.removeChild(tutorialFinger);
+      }
+      if (tutorialSparkle.parentNode) {
+        tutorialSparkle.parentNode.removeChild(tutorialSparkle);
+      }
+      
+      // Reset the stack item
+      topStackItem.style.boxShadow = '';
+      setTimeout(() => {
+        topStackItem.style.transition = '';
+      }, 300);
+    }, 2500);
+  }
   
   // Historical events game data
   const historicalEvents = [
