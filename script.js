@@ -91,33 +91,33 @@ document.addEventListener('DOMContentLoaded', () => {
   // Historical events game data
   const historicalEvents = [
     {
-      year: 1215,
-      event: "King John signed the Magna Carta in England",
-      fullText: "<b>1215</b>, King John signed the Magna Carta in England",
+      year: 1976,
+      event: "The Meadowlands Racetrack",
+      fullText: "<b>1976</b>, The Meadowlands Racetrack",
       color: "#3498db" // Original blue
     },
     {
-      year: 1492,
-      event: "Christopher Columbus arrived in the Americas",
-      fullText: "<b>1492</b>, Christopher Columbus arrived in the Americas",
+      year: 1875,
+      event: "The Red Mile",
+      fullText: "<b>1875</b>, The Red Mile",
       color: "#2980b9" // Darker blue
     },
     {
-      year: 1776,
-      event: "the United States declared its independence from Britain",
-      fullText: "<b>1776</b>, the United States declared its independence from Britain",
+      year: 1957,
+      event: "Northfield Park",
+      fullText: "<b>1957</b>, Northfield Park",
       color: "#27ae60" // Green
     },
     {
-      year: 1903,
-      event: "the Wright Brothers made the first successful airplane flight",
-      fullText: "<b>1903</b>, the Wright Brothers made the first successful airplane flight",
+      year: 1963,
+      event: "Woodbine Mohawk Park",
+      fullText: "<b>1963</b>, Woodbine Mohawk Park",
       color: "#8e44ad" // Purple
     },
     {
-      year: 1969,
-      event: "Neil Armstrong became the first person to walk on the Moon",
-      fullText: "<b>1969</b>, Neil Armstrong became the first person to walk on the Moon",
+      year: 1961,
+      event: "Western Fair Raceway",
+      fullText: "<b>1961</b>, Western Fair Raceway",
       color: "#d35400" // Orange
     }
   ];
