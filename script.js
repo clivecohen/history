@@ -1144,6 +1144,24 @@ document.addEventListener('DOMContentLoaded', () => {
     finalScoreDisplay.appendChild(finalScoreTitle);
     finalScoreDisplay.appendChild(finalScoreValue);
     
+    // Move the share button into the final score display
+    if (shareContainer) {
+      // Hide the original share container
+      shareContainer.classList.add('hidden');
+      
+      // Create a new share button element
+      const newShareButton = document.createElement('button');
+      newShareButton.id = 'final-share-button';
+      newShareButton.className = 'share-button';
+      newShareButton.textContent = 'Share Your Score';
+      
+      // Add to final score display
+      finalScoreDisplay.appendChild(newShareButton);
+      
+      // Add click event listener to the new button
+      newShareButton.addEventListener('click', shareScore);
+    }
+    
     // Add to the source container
     sourceContainer.appendChild(finalScoreDisplay);
     
@@ -1155,6 +1173,12 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Show the share button and set up its functionality
   function showShareButton() {
+    // Check if we're showing the final score (if so, don't show the original share button)
+    const finalShare = document.getElementById('final-share-button');
+    if (finalShare) {
+      return;
+    }
+    
     // Make share button visible
     shareContainer.classList.remove('hidden');
     
