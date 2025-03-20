@@ -995,74 +995,8 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Start a new game
   function startNewGame() {
-    // Clear previous game
-    sourceContainer.innerHTML = '';
-    timelineContainer.innerHTML = '';
-    resultDisplay.textContent = '';
-    resultDisplay.className = '';
-    
-    // Reset score and variables
-    score = 0;
-    updateScore();
-    lastHoveredIndex = -1;
-    draggedElement = null;
-    isDraggingActive = false;
-    stackedEvents = [];
-    
-    // Select game mode (no need to update instruction text since it's removed)
-    currentMode = {
-      name: 'Stack Game',
-      displayFormat: (event) => event.fullText
-    };
-    
-    // Add first event to the timeline container (the earliest one)
-    const firstEvent = sortedEvents[0];
-    const firstEventElement = document.createElement('div');
-    firstEventElement.className = 'item placed'; // Already placed and confirmed
-    firstEventElement.innerHTML = firstEvent.fullText; // Display with HTML for bold year
-    firstEventElement.draggable = true;
-    firstEventElement.dataset.year = firstEvent.year;
-    firstEventElement.dataset.fullText = firstEvent.fullText;
-    firstEventElement.dataset.color = firstEvent.color;
-    firstEventElement.style.backgroundColor = firstEvent.color;
-    
-    // Create a wrapper div for vertical centering (when only one item is present)
-    const timelineWrapper = document.createElement('div');
-    timelineWrapper.className = 'timeline-centering-wrapper';
-    timelineWrapper.appendChild(firstEventElement);
-    timelineContainer.appendChild(timelineWrapper);
-    
-    // Add remaining events to stack in reverse order (so oldest is picked first)
-    remainingEvents = [...historicalEvents]
-      .filter(event => event.year !== firstEvent.year)
-      .sort((a, b) => a.year - b.year);
-    
-    // Store all remaining events except the top one in stackedEvents
-    stackedEvents = remainingEvents.slice(0, remainingEvents.length - 1);
-    
-    // Create the visible top stack item
-    if (remainingEvents.length > 0) {
-      const topEvent = remainingEvents[remainingEvents.length - 1];
-      const topItemElement = document.createElement('div');
-      topItemElement.className = 'item top-of-stack';
-      topItemElement.textContent = topEvent.event; // Only show event text, not year
-      topItemElement.draggable = true;
-      topItemElement.dataset.year = topEvent.year;
-      topItemElement.dataset.fullText = topEvent.fullText;
-      topItemElement.dataset.color = topEvent.color;
-      topItemElement.style.backgroundColor = topEvent.color;
-      sourceContainer.appendChild(topItemElement);
-      
-      // Show stack count
-      updateStackCount();
-    }
-    
-    // Make sure timeline doesn't show empty message
-    timelineContainer.classList.remove('empty');
-    placedFirstEvent = true;
-    
-    // Initialize drag and drop
-    initDragAndDrop();
+    // Call our new initGame function that shuffles the game pieces
+    initGame();
   }
   
   // Update the stack count indicator
@@ -1270,6 +1204,93 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 1000);
       
     }, 300);
+  }
+  
+  // Initialize game
+  function initGame() {
+    // Shuffle the historical events to randomize the order
+    shuffleArray(historicalEvents);
+    
+    // Reset score and variables
+    score = 0;
+    updateScore();
+    sourceContainer.innerHTML = '';
+    timelineContainer.innerHTML = '';
+    resultDisplay.textContent = '';
+    resultDisplay.className = '';
+    lastHoveredIndex = -1;
+    draggedElement = null;
+    isDraggingActive = false;
+    stackedEvents = [];
+    
+    // Select game mode
+    currentMode = {
+      name: 'Stack Game',
+      displayFormat: (event) => event.fullText
+    };
+    
+    // Create items for each event
+    const shuffledEvents = [...historicalEvents];
+    
+    // Take the first event from the shuffled array for the timeline starting point
+    const firstEvent = shuffledEvents.shift();
+    
+    // Add first event to the timeline container
+    const firstEventElement = document.createElement('div');
+    firstEventElement.className = 'item placed'; // Already placed and confirmed
+    firstEventElement.innerHTML = firstEvent.fullText; // Display with HTML for bold year
+    firstEventElement.draggable = true;
+    firstEventElement.dataset.year = firstEvent.year;
+    firstEventElement.dataset.fullText = firstEvent.fullText;
+    firstEventElement.dataset.color = firstEvent.color;
+    firstEventElement.style.backgroundColor = firstEvent.color;
+    
+    // Create a wrapper div for vertical centering (when only one item is present)
+    const timelineWrapper = document.createElement('div');
+    timelineWrapper.className = 'timeline-centering-wrapper';
+    timelineWrapper.appendChild(firstEventElement);
+    timelineContainer.appendChild(timelineWrapper);
+    
+    // Add remaining events to stack
+    remainingEvents = shuffledEvents;
+    
+    // Store all remaining events except the top one in stackedEvents
+    stackedEvents = remainingEvents.slice(0, remainingEvents.length - 1);
+    
+    // Create the visible top stack item
+    if (remainingEvents.length > 0) {
+      const topEvent = remainingEvents[remainingEvents.length - 1];
+      const topItemElement = document.createElement('div');
+      topItemElement.className = 'item top-of-stack';
+      topItemElement.textContent = topEvent.event; // Only show event text, not year
+      topItemElement.draggable = true;
+      topItemElement.dataset.year = topEvent.year;
+      topItemElement.dataset.fullText = topEvent.fullText;
+      topItemElement.dataset.color = topEvent.color;
+      topItemElement.style.backgroundColor = topEvent.color;
+      sourceContainer.appendChild(topItemElement);
+      
+      // Show stack count
+      updateStackCount();
+    }
+    
+    // Make sure timeline doesn't show empty message
+    timelineContainer.classList.remove('empty');
+    placedFirstEvent = true;
+    
+    // Initialize drag and drop functionality
+    initDragAndDrop();
+  }
+  
+  // Fisher-Yates shuffle algorithm to randomize array
+  function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      // Generate random index
+      const j = Math.floor(Math.random() * (i + 1));
+      // Swap elements
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
   }
   
   // Call startNewGame directly when page loads instead of hooking up button events
