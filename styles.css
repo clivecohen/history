@@ -607,6 +607,30 @@ button:hover {
   border-radius: 15px;
   background-color: rgba(255, 255, 255, 0.8);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+#final-share-button {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 30px;
+  padding: 12px 25px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: background-color 0.3s, transform 0.2s;
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+}
+
+#final-share-button:hover {
+  background-color: #2980b9;
+  transform: translateY(-2px);
+}
+
+#final-share-button:active {
+  transform: translateY(1px);
 }
 
 .trophy-icon {
