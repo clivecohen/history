@@ -365,13 +365,27 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add to item
     item.appendChild(tapButton);
     
-    // Make the entire item clickable to place it
-    item.addEventListener('click', (e) => {
+    // Handler function for both click and touch events
+    const handlePlacement = (e) => {
+      e.preventDefault();
+      e.stopPropagation(); // Prevent event bubbling
+      
       // Only process if the item is in the timeline and has the tappable class
       if (item.classList.contains('tappable')) {
-        finalizeItemPlacement(item);
+        // Add visual feedback
+        item.style.transform = 'scale(0.98)';
+        
+        // Small delay for visual feedback
+        setTimeout(() => {
+          item.style.transform = '';
+          finalizeItemPlacement(item);
+        }, 100);
       }
-    });
+    };
+    
+    // Add both click and touchend events for better cross-platform support
+    item.addEventListener('click', handlePlacement);
+    item.addEventListener('touchend', handlePlacement);
   }
 
   // Handle finalizing the placement of an item
@@ -1103,10 +1117,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Clear the source container (Event Stack)
     sourceContainer.innerHTML = '';
     
-    // Change the label above the source container
+    // Hide or remove the area labels
     const sourceLabel = document.querySelector('label[for="source-container"]');
     if (sourceLabel) {
-      sourceLabel.textContent = 'GAME COMPLETE';
+      sourceLabel.style.display = 'none';
+    }
+    
+    const timelineLabel = document.querySelector('label[for="timeline-container"]');
+    if (timelineLabel) {
+      timelineLabel.style.display = 'none';
     }
     
     // Create final score display
@@ -1121,13 +1140,7 @@ document.addEventListener('DOMContentLoaded', () => {
     finalScoreValue.textContent = score;
     finalScoreValue.className = 'final-score-value';
     
-    // Add a trophy icon
-    const trophyIcon = document.createElement('div');
-    trophyIcon.className = 'trophy-icon';
-    trophyIcon.innerHTML = '🏆';
-    
-    // Assemble the final score display
-    finalScoreDisplay.appendChild(trophyIcon);
+    // Assemble the final score display (without trophy icon)
     finalScoreDisplay.appendChild(finalScoreTitle);
     finalScoreDisplay.appendChild(finalScoreValue);
     
