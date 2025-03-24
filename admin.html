@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Racing Quiz - Statistics Dashboard</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+      background-color: #f5f5f5;
+    }
+    h1 {
+      color: #2c3e50;
+      text-align: center;
+    }
+    .stats-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-top: 30px;
+    }
+    .stat-card {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      flex: 1 1 200px;
+    }
+    .stat-card h3 {
+      margin-top: 0;
+      color: #3498db;
+      font-size: 16px;
+    }
+    .stat-value {
+      font-size: 36px;
+      font-weight: bold;
+      color: #2c3e50;
+    }
+    .chart-container {
+      margin-top: 40px;
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .loading {
+      text-align: center;
+      color: #7f8c8d;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <h1>Racing Quiz Game Statistics</h1>
+  
+  <div class="stats-container">
+    <div class="stat-card">
+      <h3>Total Players</h3>
+      <div class="stat-value" id="unique-players">-</div>
+    </div>
+    <div class="stat-card">
+      <h3>Games Started</h3>
+      <div class="stat-value" id="games-started">-</div>
+    </div>
+    <div class="stat-card">
+      <h3>Games Completed</h3>
+      <div class="stat-value" id="games-completed">-</div>
+    </div>
+    <div class="stat-card">
+      <h3>Completion Rate</h3>
+      <div class="stat-value" id="completion-rate">-</div>
+    </div>
+    <div class="stat-card">
+      <h3>Perfect Scores</h3>
+      <div class="stat-value" id="perfect-scores">-</div>
+    </div>
+    <div class="stat-card">
+      <h3>Average Score</h3>
+      <div class="stat-value" id="average-score">-</div>
+    </div>
+    <div class="stat-card">
+      <h3>Players Online</h3>
+      <div class="stat-value" id="players-online">-</div>
+    </div>
+  </div>
+  
+  <div class="chart-container">
+    <h3>Score Distribution</h3>
+    <div id="score-distribution" class="loading">Loading data...</div>
+  </div>
+  
+  <div class="chart-container">
+    <h3>Difficulty by Year</h3>
+    <div id="year-difficulty" class="loading">Loading data...</div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  
+  <!-- Optional: Chart.js for visualizations -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <script>
+    // Your Firebase configuration
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "your-project-id.firebaseapp.com",
+      databaseURL: "https://your-project-id-default-rtdb.firebaseio.com",
+      projectId: "your-project-id",
+      storageBucket: "your-project-id.appspot.com",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    
+    // Load statistics
+    function loadStats() {
+      const statsRef = firebase.database().ref('stats');
+      statsRef.on('value', (snapshot) => {
+        const stats = snapshot.val() || {};
+        
+        // Update basic stats
+        document.getElementById('unique-players').textContent = stats.unique_players || 0;
+        document.getElementById('games-started').textContent = stats.games_started || 0;
+        document.getElementById('games-completed').textContent = stats.games_completed || 0;
+        
+        const completionRate = stats.games_started ? 
+          Math.round((stats.games_completed / stats.games_started) * 100) : 0;
+        document.getElementById('completion-rate').textContent = `${completionRate}%`;
+        
+        document.getElementById('perfect-scores').textContent = stats.perfect_scores || 0;
+        
+        const avgScore = (stats.games_completed && stats.total_score) ? 
+          Math.round(stats.total_score / stats.games_completed) : 0;
+        document.getElementById('average-score').textContent = avgScore;
+        
+        // Score distribution chart
+        if (stats.score_distribution && typeof Chart !== 'undefined') {
+          const scoreDistribution = stats.score_distribution;
+          const labels = Object.keys(scoreDistribution).sort((a, b) => Number(a) - Number(b));
+          const data = labels.map(key => scoreDistribution[key]);
+          
+          const scoreCanvas = document.createElement('canvas');
+          document.getElementById('score-distribution').innerHTML = '';
+          document.getElementById('score-distribution').appendChild(scoreCanvas);
+          
+          new Chart(scoreCanvas, {
+            type: 'bar',
+            data: {
+              labels: labels.map(l => `${l}-${Number(l)+99}`),
+              datasets: [{
+                label: 'Number of Games',
+                data: data,
+                backgroundColor: '#3498db'
+              }]
+            },
+            options: {
+              responsive: true,
+              scales: {
+                y: {
+                  beginAtZero: true
+                }
+              }
+            }
+          });
+        } else {
+          document.getElementById('score-distribution').textContent = 'No data available';
+        }
+        
+        // Year difficulty chart
+        if (stats.placements && typeof Chart !== 'undefined') {
+          const placements = stats.placements;
+          const yearLabels = Object.keys(placements).sort((a, b) => Number(a) - Number(b));
+          
+          const correctData = [];
+          const incorrectData = [];
+          
+          yearLabels.forEach(year => {
+            const yearData = placements[year];
+            correctData.push(yearData.correct || 0);
+            incorrectData.push(yearData.incorrect || 0);
+          });
+          
+          const yearCanvas = document.createElement('canvas');
+          document.getElementById('year-difficulty').innerHTML = '';
+          document.getElementById('year-difficulty').appendChild(yearCanvas);
+          
+          new Chart(yearCanvas, {
+            type: 'bar',
+            data: {
+              labels: yearLabels,
+              datasets: [
+                {
+                  label: 'Correct Placements',
+                  data: correctData,
+                  backgroundColor: '#2ecc71'
+                },
+                {
+                  label: 'Incorrect Placements',
+                  data: incorrectData,
+                  backgroundColor: '#e74c3c'
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  stacked: false
+                },
+                x: {
+                  stacked: false
+                }
+              }
+            }
+          });
+        } else {
+          document.getElementById('year-difficulty').textContent = 'No data available';
+        }
+      });
+      
+      // Track online players
+      const onlineRef = firebase.database().ref('online');
+      onlineRef.on('value', (snapshot) => {
+        const onlineCount = snapshot.numChildren();
+        document.getElementById('players-online').textContent = onlineCount;
+      });
+    }
+    
+    // Load stats when page loads
+    window.addEventListener('DOMContentLoaded', loadStats);
+  </script>
+</body>
+</html>
