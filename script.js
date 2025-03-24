@@ -91,34 +91,40 @@ document.addEventListener('DOMContentLoaded', () => {
   // Historical events game data
   const historicalEvents = [
     {
-      year: 1976,
-      event: "The Meadowlands Racetrack",
-      fullText: "<b>1976</b>, The Meadowlands Racetrack",
-      color: "#3498db" // Original blue
+      year: 1930,
+      event: "Introduction of the starting gate in horse racing",
+      fullText: "<b>1930s</b>, Introduction of the starting gate in horse racing",
+      color: "#FF5252" // Bright red
     },
     {
-      year: 1875,
-      event: "The Red Mile",
-      fullText: "<b>1875</b>, The Red Mile",
-      color: "#2980b9" // Darker blue
+      year: 1946,
+      event: "First mobile starting gate was introduced",
+      fullText: "<b>1946</b>, First mobile starting gate was introduced",
+      color: "#448AFF" // Bright blue
     },
     {
-      year: 1957,
-      event: "Northfield Park",
-      fullText: "<b>1957</b>, Northfield Park",
-      color: "#27ae60" // Green
+      year: 1993,
+      event: "First sub-1:50 mile by a pacer (Staying Together)",
+      fullText: "<b>1993</b>, First sub-1:50 mile by a pacer (Staying Together)",
+      color: "#FF9800" // Bright orange
     },
     {
-      year: 1963,
-      event: "Woodbine Mohawk Park",
-      fullText: "<b>1963</b>, Woodbine Mohawk Park",
-      color: "#8e44ad" // Purple
+      year: 2004,
+      event: "North America Cup is contested for a record breaking $1,629,500 purse",
+      fullText: "<b>2004</b>, North America Cup is contested for a record breaking $1,629,500 purse",
+      color: "#9C27B0" // Bright purple
     },
     {
-      year: 1961,
-      event: "Western Fair Raceway",
-      fullText: "<b>1961</b>, Western Fair Raceway",
-      color: "#d35400" // Orange
+      year: 2020,
+      event: "First sub-1:50 mile by a trotter (Homicide Hunter)",
+      fullText: "<b>2020</b>, First sub-1:50 mile by a trotter (Homicide Hunter)",
+      color: "#4CAF50" // Bright green
+    },
+    {
+      year: 2022,
+      event: "First sub-1:46 mile by a pacer (Bulldog Hanover)",
+      fullText: "<b>2022</b>, First sub-1:46 mile by a pacer (Bulldog Hanover)",
+      color: "#00BCD4" // Bright cyan
     }
   ];
   
@@ -127,6 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Score and game state
   let score = 0;
+  let correctAnswerCount = 0; // Track number of correct answers
   let currentMode;
   let touchY; // Track touch position
   let remainingEvents = [];
@@ -480,12 +487,38 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Update score and display feedback
     if (isCorrect) {
-      score += 100;
+      // Calculate progressive points based on number of correct answers
+      correctAnswerCount++;
+      
+      // Calculate points with the simplified system
+      let pointsEarned = 0;
+      
+      switch(correctAnswerCount) {
+        case 1:
+          pointsEarned = 50;
+          break;
+        case 2:
+          pointsEarned = 100;
+          break;
+        case 3:
+          pointsEarned = 200;
+          break;
+        case 4:
+          pointsEarned = 300;
+          break;
+        case 5:
+        default:
+          pointsEarned = 400;
+          break;
+      }
+      
+      score += pointsEarned;
       updateScore();
-      debugLog("Showing correct feedback");
+      updateScoringExplanation(); // Update scoring explanation for next piece
+      debugLog(`Showing correct feedback: +${pointsEarned} points`);
       
       // Safari-friendly way of showing feedback
-      showFeedback('Correct! +100 points', 'correct');
+      showFeedback(`Correct! +${pointsEarned} points`, 'correct');
       
       // Small delay for Safari
       setTimeout(() => {
@@ -610,6 +643,37 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       scoreDisplay.classList.remove('score-glow');
     }, 1000);
+  }
+
+  // Update the scoring explanation based on current correct answer count
+  function updateScoringExplanation() {
+    const scoringExplanation = document.getElementById('scoring-explanation');
+    if (!scoringExplanation) return;
+    
+    let pointsWorth = 0;
+    
+    // Calculate what the NEXT correct answer will be worth
+    // This matches the simplified scoring system
+    switch(correctAnswerCount) {
+      case 0:
+        pointsWorth = 50; // First answer
+        break;
+      case 1:
+        pointsWorth = 100; // Second answer
+        break;
+      case 2:
+        pointsWorth = 200; // Third answer
+        break;
+      case 3:
+        pointsWorth = 300; // Fourth answer
+        break;
+      case 4:
+      default:
+        pointsWorth = 400; // Fifth answer and beyond
+        break;
+    }
+    
+    scoringExplanation.textContent = `Correct answer is worth ${pointsWorth} points`;
   }
 
   // Show feedback briefly
@@ -1037,6 +1101,9 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Replace the Event Stack with Final Score display
   function displayFinalScore() {
+    // Check if player got a perfect score (all items placed correctly)
+    const isPerfectScore = correctAnswerCount === historicalEvents.length - 1;
+    
     // Hide the regular score display
     const scoreContainer = document.querySelector('.score-container');
     if (scoreContainer) {
@@ -1062,7 +1129,7 @@ document.addEventListener('DOMContentLoaded', () => {
     finalScoreDisplay.className = 'final-score-display';
     
     const finalScoreTitle = document.createElement('h2');
-    finalScoreTitle.textContent = 'FINAL SCORE';
+    finalScoreTitle.textContent = isPerfectScore ? 'PERFECT SCORE' : 'FINAL SCORE';
     finalScoreTitle.className = 'final-score-title';
     
     const finalScoreValue = document.createElement('div');
@@ -1117,13 +1184,20 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Share score via the Web Share API if available
   function shareScore() {
-    const shareText = `I scored ${score} points in the Racing Quiz Game! Can you beat my score?`;
+    // Check if player got a perfect score
+    const isPerfectScore = correctAnswerCount === historicalEvents.length - 1;
+    
+    // Different text based on whether score is perfect or not
+    const shareText = isPerfectScore
+      ? "I got a perfect score in the Racing Quiz game! How will you do?"
+      : `I scored ${score} points in the Racing Quiz Game! Can you beat my score?`;
+    
     const shareUrl = window.location.href;
     
     // Check if the Web Share API is available
     if (navigator.share) {
       navigator.share({
-        title: 'Racing Quiz',
+        title: 'Racing Quiz Game',
         text: shareText,
         url: shareUrl,
       })
@@ -1213,7 +1287,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Reset score and variables
     score = 0;
+    correctAnswerCount = 0; // Reset correct answer counter
     updateScore();
+    updateScoringExplanation(); // Initialize scoring explanation
     sourceContainer.innerHTML = '';
     timelineContainer.innerHTML = '';
     resultDisplay.textContent = '';
@@ -1267,6 +1343,7 @@ document.addEventListener('DOMContentLoaded', () => {
       topItemElement.dataset.year = topEvent.year;
       topItemElement.dataset.fullText = topEvent.fullText;
       topItemElement.dataset.color = topEvent.color;
+      // Apply background color while preserving gradient
       topItemElement.style.backgroundColor = topEvent.color;
       sourceContainer.appendChild(topItemElement);
       
