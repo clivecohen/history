@@ -143,6 +143,129 @@ document.addEventListener('DOMContentLoaded', () => {
   let isDraggingActive = false; // Track if we're currently dragging
   let stackedEvents = []; // Track stacked events in source
   
+  // Firebase Statistics Tracking Functions
+  
+  // Check if Firebase is loaded and available
+  function isFirebaseAvailable() {
+    return typeof firebase !== 'undefined' && firebase.app && firebase.database;
+  }
+
+  // Generate or retrieve a unique user ID
+  function getUserId() {
+    let userId = localStorage.getItem('racing_quiz_user_id');
+    if (!userId) {
+      userId = 'user_' + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem('racing_quiz_user_id', userId);
+    }
+    return userId;
+  }
+
+  // Track when a game starts
+  function trackGameStart() {
+    try {
+      if (!isFirebaseAvailable()) return;
+      
+      // Log event in Analytics
+      firebase.analytics().logEvent('game_started');
+      
+      // Get or create a unique player ID
+      const userId = getUserId();
+      
+      // Check if this is a new player
+      const isNewPlayer = localStorage.getItem('racing_quiz_played') !== 'true';
+      if (isNewPlayer) {
+        localStorage.setItem('racing_quiz_played', 'true');
+        
+        // Increment unique player count
+        firebase.database().ref('stats/unique_players').transaction(count => (count || 0) + 1);
+      }
+      
+      // Increment total games started
+      firebase.database().ref('stats/games_started').transaction(count => (count || 0) + 1);
+      
+      // Track this specific game session
+      const sessionId = 'session_' + Date.now();
+      localStorage.setItem('racing_quiz_session', sessionId);
+      
+      // Add to players online counter
+      const playerRef = firebase.database().ref(`online/${userId}`);
+      playerRef.set(true);
+      playerRef.onDisconnect().remove();
+      
+      debugLog("Game start tracked successfully");
+    } catch (error) {
+      console.error("Error tracking game start:", error);
+      // Continue without tracking
+    }
+  }
+
+  // Track when a player places an item
+  function trackPlacement(isCorrect, year) {
+    try {
+      if (!isFirebaseAvailable()) return;
+      
+      // Log event in Analytics
+      firebase.analytics().logEvent('item_placement', {
+        correct: isCorrect,
+        year: year
+      });
+      
+      // Track placement stats
+      if (isCorrect) {
+        firebase.database().ref(`stats/placements/${year}/correct`).transaction(count => (count || 0) + 1);
+      } else {
+        firebase.database().ref(`stats/placements/${year}/incorrect`).transaction(count => (count || 0) + 1);
+      }
+      
+      debugLog(`Placement tracked: year=${year}, correct=${isCorrect}`);
+    } catch (error) {
+      console.error("Error tracking placement:", error);
+      // Continue without tracking
+    }
+  }
+
+  // Track when a game completes
+  function trackGameComplete(finalScore, isPerfectScore) {
+    try {
+      if (!isFirebaseAvailable()) return;
+      
+      // Log event in Analytics
+      firebase.analytics().logEvent('game_completed', {
+        score: finalScore,
+        perfect_score: isPerfectScore
+      });
+      
+      // Increment games completed counter
+      firebase.database().ref('stats/games_completed').transaction(count => (count || 0) + 1);
+      
+      // Track perfect scores
+      if (isPerfectScore) {
+        firebase.database().ref('stats/perfect_scores').transaction(count => (count || 0) + 1);
+      }
+      
+      // Add to score distribution
+      const scoreKey = Math.floor(finalScore / 100) * 100; // Group scores by hundreds
+      firebase.database().ref(`stats/score_distribution/${scoreKey}`).transaction(count => (count || 0) + 1);
+      
+      // Track total score for average calculation
+      firebase.database().ref('stats/total_score').transaction(total => (total || 0) + finalScore);
+      
+      // Track high score if it's higher than current
+      const userId = getUserId();
+      firebase.database().ref(`users/${userId}/high_score`).once('value', snapshot => {
+        const highScore = snapshot.val() || 0;
+        if (finalScore > highScore) {
+          firebase.database().ref(`users/${userId}/high_score`).set(finalScore);
+        }
+      });
+      
+      debugLog(`Game completion tracked: score=${finalScore}, perfect=${isPerfectScore}`);
+    } catch (error) {
+      console.error("Error tracking game completion:", error);
+      // Continue without tracking
+    }
+  }
+  
   // Initialize drag and drop
   function initDragAndDrop() {
     const draggables = document.querySelectorAll('.item:not(.placed)');
@@ -517,6 +640,9 @@ document.addEventListener('DOMContentLoaded', () => {
       updateScoringExplanation(); // Update scoring explanation for next piece
       debugLog(`Showing correct feedback: +${pointsEarned} points`);
       
+      // Track correct placement for statistics
+      trackPlacement(true, yearToCheck);
+      
       // Safari-friendly way of showing feedback
       showFeedback(`Correct! +${pointsEarned} points`, 'correct');
       
@@ -540,6 +666,9 @@ document.addEventListener('DOMContentLoaded', () => {
       
     } else {
       debugLog("Showing incorrect feedback");
+      
+      // Track incorrect placement for statistics
+      trackPlacement(false, yearToCheck);
       
       // Safari-friendly way of showing feedback
       showFeedback('Incorrect placement! No points', 'incorrect');
@@ -1104,6 +1233,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check if player got a perfect score (all items placed correctly)
     const isPerfectScore = correctAnswerCount === historicalEvents.length - 1;
     
+    // Track game completion for statistics
+    trackGameComplete(score, isPerfectScore);
+    
     // Hide the regular score display
     const scoreContainer = document.querySelector('.score-container');
     if (scoreContainer) {
@@ -1282,6 +1414,9 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Initialize game
   function initGame() {
+    // Track game start for statistics
+    trackGameStart();
+    
     // Shuffle the historical events to randomize the order
     shuffleArray(historicalEvents);
     
