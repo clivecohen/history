@@ -75,6 +75,14 @@ h1 {
   font-size: 0.9rem;
 }
 
+.scoring-explanation {
+  font-size: 0.8rem;
+  color: #7f8c8d;
+  margin-bottom: 8px;
+  font-style: italic;
+  text-align: center;
+}
+
 #source-container {
   display: flex;
   flex-direction: column;
@@ -167,9 +175,10 @@ h1 {
 
 .item {
   background-color: #3498db; /* Default color, will be overridden by inline styles */
+  background-image: linear-gradient(145deg, rgba(255,255,255,0.4) 0%, rgba(0,0,0,0.35) 100%);
   color: white;
-  padding: 12px 15px;
-  border-radius: 6px;
+  padding: 8px 15px;
+  border-radius: 12px; /* Increased from 6px for rounder corners */
   cursor: grab;
   user-select: none;
   font-size: 15px;
@@ -181,6 +190,11 @@ h1 {
   z-index: 1;
   will-change: transform;
   transition: transform 0.2s, filter 0.2s, box-shadow 0.2s;
+}
+
+/* Remove the ::before pseudo-element as it's not needed with the direct background-image approach */
+.item::before {
+  display: none;
 }
 
 .item .tap-button {
@@ -493,6 +507,7 @@ button:hover {
 
 #share-button {
   background-color: #3b5998;
+  background-image: linear-gradient(145deg, rgba(255,255,255,0.3) 0%, rgba(0,0,0,0.25) 100%);
   color: white;
   border: none;
   border-radius: 30px;
@@ -559,9 +574,10 @@ button:hover {
 
 #continue-button {
   background-color: #3498db;
+  background-image: linear-gradient(145deg, rgba(255,255,255,0.4) 0%, rgba(0,0,0,0.35) 100%);
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 12px;
   padding: 12px 30px;
   font-size: 1rem;
   font-weight: bold;
@@ -572,6 +588,8 @@ button:hover {
 
 #continue-button:hover {
   background-color: #2980b9;
+  background-image: linear-gradient(145deg, rgba(255,255,255,0.5) 0%, rgba(0,0,0,0.4) 100%);
+  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.2);
 }
 
 .hidden {
@@ -615,6 +633,7 @@ button:hover {
 
 #final-share-button {
   background-color: #3498db;
+  background-image: linear-gradient(145deg, rgba(255,255,255,0.4) 0%, rgba(0,0,0,0.35) 100%);
   color: white;
   border: none;
   border-radius: 30px;
