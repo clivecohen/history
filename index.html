@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Racing Quiz</title>
+  <title>Historical Timeline Game</title>
   <style>
     /* Prevent iOS bouncing/scrolling effects */
     html, body {
@@ -25,16 +25,13 @@
       -webkit-overflow-scrolling: touch;
     }
   </style>
- <!-- Add favicon here -->
-    <link rel="icon" href="favicon.png" type="image/x-icon">
-    <link rel="shortcut icon" href="favicon.png" type="image/x-icon">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div id="intro-screen" class="intro-screen">
     <div class="intro-content">
-      <h1>Harness Racing Quiz</h1>
-      <p>Drag events from the top and place them in chronological order of when the track opened. Get 100 points for every correct placement!</p>
+      <h1>Racing Quiz Game</h1>
+      <p>Drag events from the top stack and place them in chronological order below. Today's theme... RACING MILESTONES!</p>
       <button id="continue-button">CONTINUE</button>
     </div>
   </div>
@@ -46,6 +43,7 @@
       </div>
       <div id="game-container">
         <div class="area-label">Event Stack (<span id="stack-count">4</span> remaining):</div>
+        <div id="scoring-explanation" class="scoring-explanation">Correct answer is worth 25 points</div>
         <div id="source-container"></div>
         <div class="area-label">Your Timeline:</div>
         <div class="timeline-wrapper">
