@@ -1,14 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-Y913CR3GG1"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-Y913CR3GG1');
-</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Historical Timeline Game</title>
@@ -91,5 +83,29 @@
     });
   </script>
   <script src="script.js"></script>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  
+  <!-- Initialize Firebase -->
+  <script>
+    // Your web app's Firebase configuration
+    // Replace these values with your actual Firebase project details
+    const firebaseConfig = {
+      apiKey: "AIzaSyAug4qLTCqmfwaPiLBQAJI5G726D8KWGs8",
+  authDomain: "racing-quiz-game.firebaseapp.com",
+  databaseURL: "https://racing-quiz-game-default-rtdb.firebaseio.com",
+  projectId: "racing-quiz-game",
+  storageBucket: "racing-quiz-game.firebasestorage.app",
+  messagingSenderId: "266538240177",
+  appId: "1:266538240177:web:45128d13f5523e6c6dfa90",
+  measurementId: "G-82WE4L1P78"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+  </script>
 </body>
 </html> 
