@@ -235,6 +235,10 @@ document.addEventListener('DOMContentLoaded', () => {
         perfect_score: isPerfectScore
       });
       
+      // Get today's date in YYYY-MM-DD format for tracking
+      const today = new Date();
+      const dateString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      
       // Increment games completed counter
       firebase.database().ref('stats/games_completed').transaction(count => (count || 0) + 1);
       
@@ -250,6 +254,9 @@ document.addEventListener('DOMContentLoaded', () => {
       // Track total score for average calculation
       firebase.database().ref('stats/total_score').transaction(total => (total || 0) + finalScore);
       
+      // Track completion by date
+      firebase.database().ref(`stats/completions_by_date/${dateString}`).transaction(count => (count || 0) + 1);
+      
       // Track high score if it's higher than current
       const userId = getUserId();
       firebase.database().ref(`users/${userId}/high_score`).once('value', snapshot => {
@@ -259,7 +266,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
       
-      debugLog(`Game completion tracked: score=${finalScore}, perfect=${isPerfectScore}`);
+      // Track completion by unique player
+      firebase.database().ref(`users/${userId}/games_completed`).transaction(count => (count || 0) + 1);
+      
+      // Get all users who have completed at least one game
+      firebase.database().ref('users').once('value', snapshot => {
+        if (!snapshot.exists()) return;
+        
+        let uniqueCompletions = 0;
+        snapshot.forEach(childSnapshot => {
+          if (childSnapshot.hasChild('games_completed') && childSnapshot.child('games_completed').val() > 0) {
+            uniqueCompletions++;
+          }
+        });
+        
+        // Update unique completions count
+        firebase.database().ref('stats/unique_completions').set(uniqueCompletions);
+      });
+      
+      debugLog(`Game completion tracked: score=${finalScore}, perfect=${isPerfectScore}, date=${dateString}`);
     } catch (error) {
       console.error("Error tracking game completion:", error);
       // Continue without tracking
