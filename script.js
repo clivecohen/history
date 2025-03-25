@@ -1419,7 +1419,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Replace the Event Stack with Final Score display
   function displayFinalScore() {
     // Check if player got a perfect score (all items placed correctly)
-    const isPerfectScore = correctAnswerCount === historicalEvents.length - 1;
+    const isPerfectScore = correctAnswerCount === historicalEvents.length;
     
     // Track game completion for statistics
     trackGameComplete(score, isPerfectScore);
@@ -1523,7 +1523,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Share score via the Web Share API if available
   function shareScore() {
     // Check if player got a perfect score
-    const isPerfectScore = correctAnswerCount === historicalEvents.length - 1;
+    const isPerfectScore = correctAnswerCount === historicalEvents.length;
     
     // Different text based on whether score is perfect or not
     const shareText = isPerfectScore
