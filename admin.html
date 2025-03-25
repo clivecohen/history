@@ -506,9 +506,9 @@
           logDebug('Completion data error: ' + error.message);
           
           // Fallback to sample data if there's an error
-          const completionsByDate = dates.map(() => Math.floor(Math.random() * 10));
+          const completionsByDate = dates.map(() => 0);
           createCompletionsChart(completionsByDate, labels);
-          logDebug('Chart created with sample data (fallback)');
+          logDebug('Chart created with empty data (fallback)');
         });
       } catch (error) {
         logDebug('Stats loading error: ' + error.message);
