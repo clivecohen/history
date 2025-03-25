@@ -1374,9 +1374,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const placedItems = timelineContainer.querySelectorAll('.item.placed');
     const unplacedItems = timelineContainer.querySelectorAll('.timeline-item').length;
     
-    // If all events have been placed (all historical events minus any unplaced items)
-    // Note: We subtract 1 from historicalEvents.length because the first event is automatically placed
-    if (placedItems.length === historicalEvents.length - 1 && unplacedItems === 0) {
+    // If all events have been placed (should be all historical events in total, including the first auto-placed one)
+    if (placedItems.length === historicalEvents.length && unplacedItems === 0) {
       // Game is complete - show share button
       showShareButton();
       
