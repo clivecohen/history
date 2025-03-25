@@ -629,7 +629,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Handler function for both click and touch events
     const handlePlacement = (e) => {
-      e.preventDefault();
+      // Don't prevent default here - this lets the tap work naturally
       e.stopPropagation(); // Prevent event bubbling
       
       // Only process if the item is in the timeline and has the tappable class
@@ -657,8 +657,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     // Add both click and touchend events for better cross-platform support
+    // Attach to the entire item, not just the button
     item.addEventListener('click', handlePlacement);
-    item.addEventListener('touchend', handlePlacement);
+    
+    // Don't add the touchend handler to the item - it would conflict with drag operations
+    // Instead, add a separate touchend handler just to the button
+    tapButton.addEventListener('touchend', handlePlacement);
   }
 
   // Handle finalizing the placement of an item
@@ -1204,6 +1208,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const touch = e.changedTouches ? e.changedTouches[0] : null;
     const currentY = touch ? touch.clientY : 0;
     
+    // Check if we're tapping on a tap button directly - if so, let it handle the event
+    if (e.target.closest('.tap-button')) {
+      return;
+    }
+    
     // Reset positioning to prepare for insertion
     draggedElement.style.position = '';
     draggedElement.style.left = '';
@@ -1218,6 +1227,32 @@ document.addEventListener('DOMContentLoaded', () => {
     const isOverTimeline = 
       currentY >= timelineRect.top && 
       currentY <= timelineRect.bottom;
+      
+    // Before we continue with the drop, check if this was a short tap rather than a drag
+    // This helps with clicking on items that are already in the timeline
+    const isTap = Math.abs(touchY - currentY) < 5; // If barely moved, consider it a tap
+    
+    // If it's a tap on a tappable item, this might be a placement attempt
+    if (isTap && draggedElement.classList.contains('tappable')) {
+      // Update the timestamp but let the click handler deal with it
+      draggedElement.dataset.lastDragEnd = Date.now().toString();
+      
+      // Clean up drag state
+      draggedElement.classList.remove('dragging');
+      draggedElement.style.opacity = '1';
+      timelineContainer.classList.remove('active-dropzone');
+      timelineContainer.classList.remove('highlight-dropzone');
+      resetItemsAnimation();
+      
+      // Reset drag tracking variables
+      draggedElement = null;
+      isDraggingActive = false;
+      lastHoveredIndex = -1;
+      checkEmpty();
+      
+      // Let the click event fire naturally
+      return;
+    }
     
     if (isOverTimeline) {
       // Place the item in the timeline at the appropriate position
