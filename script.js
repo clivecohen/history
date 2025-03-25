@@ -171,17 +171,27 @@ document.addEventListener('DOMContentLoaded', () => {
       // Get or create a unique player ID
       const userId = getUserId();
       
+      // Get today's date in YYYY-MM-DD format
+      const today = new Date();
+      const dateString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      
       // Check if this is a new player
       const isNewPlayer = localStorage.getItem('racing_quiz_played') !== 'true';
       if (isNewPlayer) {
         localStorage.setItem('racing_quiz_played', 'true');
         
-        // Increment unique player count
+        // Increment unique player count (overall)
         firebase.database().ref('stats/unique_players').transaction(count => (count || 0) + 1);
+        
+        // Increment unique player count (by date)
+        firebase.database().ref(`stats/by_date/${dateString}/unique_players`).transaction(count => (count || 0) + 1);
       }
       
-      // Increment total games started
+      // Increment total games started (overall)
       firebase.database().ref('stats/games_started').transaction(count => (count || 0) + 1);
+      
+      // Increment total games started (by date)
+      firebase.database().ref(`stats/by_date/${dateString}/games_started`).transaction(count => (count || 0) + 1);
       
       // Track this specific game session
       const sessionId = 'session_' + Date.now();
@@ -227,7 +237,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Track when a game completes
   function trackGameComplete(finalScore, isPerfectScore) {
     try {
-      if (!isFirebaseAvailable()) return;
+      if (!isFirebaseAvailable()) {
+        debugLog("Firebase not available for game completion tracking");
+        return;
+      }
       
       // Log event in Analytics
       firebase.analytics().logEvent('game_completed', {
@@ -239,39 +252,106 @@ document.addEventListener('DOMContentLoaded', () => {
       const today = new Date();
       const dateString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
       
-      // Increment games completed counter
-      firebase.database().ref('stats/games_completed').transaction(count => (count || 0) + 1);
+      debugLog(`Tracking game completion for date: ${dateString}`);
       
-      // Track perfect scores
+      // Get the user ID for tracking
+      const userId = getUserId();
+      
+      // Increment games completed counter (overall)
+      firebase.database().ref('stats/games_completed').transaction(count => {
+        const newCount = (count || 0) + 1;
+        debugLog(`Updated total games completed: ${newCount}`);
+        return newCount;
+      });
+      
+      // Increment games completed counter (by date)
+      firebase.database().ref(`stats/by_date/${dateString}/games_completed`).transaction(count => {
+        const newCount = (count || 0) + 1;
+        debugLog(`Updated games completed for date ${dateString}: ${newCount}`);
+        return newCount;
+      });
+      
+      // Track perfect scores (overall)
       if (isPerfectScore) {
-        firebase.database().ref('stats/perfect_scores').transaction(count => (count || 0) + 1);
+        firebase.database().ref('stats/perfect_scores').transaction(count => {
+          const newCount = (count || 0) + 1;
+          debugLog(`Updated perfect scores: ${newCount}`);
+          return newCount;
+        });
+        
+        // Track perfect scores (by date)
+        firebase.database().ref(`stats/by_date/${dateString}/perfect_scores`).transaction(count => {
+          const newCount = (count || 0) + 1;
+          debugLog(`Updated perfect scores for date ${dateString}: ${newCount}`);
+          return newCount;
+        });
       }
       
-      // Add to score distribution
+      // Add to score distribution (overall)
       const scoreKey = Math.floor(finalScore / 100) * 100; // Group scores by hundreds
-      firebase.database().ref(`stats/score_distribution/${scoreKey}`).transaction(count => (count || 0) + 1);
+      firebase.database().ref(`stats/score_distribution/${scoreKey}`).transaction(count => {
+        const newCount = (count || 0) + 1;
+        debugLog(`Updated score distribution for ${scoreKey}: ${newCount}`);
+        return newCount;
+      });
       
-      // Track total score for average calculation
-      firebase.database().ref('stats/total_score').transaction(total => (total || 0) + finalScore);
+      // Add to score distribution (by date)
+      firebase.database().ref(`stats/by_date/${dateString}/score_distribution/${scoreKey}`).transaction(count => {
+        const newCount = (count || 0) + 1;
+        debugLog(`Updated score distribution for ${scoreKey} on ${dateString}: ${newCount}`);
+        return newCount;
+      });
       
-      // Track completion by date
-      firebase.database().ref(`stats/completions_by_date/${dateString}`).transaction(count => (count || 0) + 1);
+      // Track total score for average calculation (overall)
+      firebase.database().ref('stats/total_score').transaction(total => {
+        const newTotal = (total || 0) + finalScore;
+        debugLog(`Updated total score: ${newTotal}`);
+        return newTotal;
+      });
+      
+      // Track total score for average calculation (by date)
+      firebase.database().ref(`stats/by_date/${dateString}/total_score`).transaction(total => {
+        const newTotal = (total || 0) + finalScore;
+        debugLog(`Updated total score for date ${dateString}: ${newTotal}`);
+        return newTotal;
+      });
+      
+      // Track completion by date (for graph)
+      firebase.database().ref(`stats/completions_by_date/${dateString}`).transaction(count => {
+        const newCount = (count || 0) + 1;
+        debugLog(`Updated completions for ${dateString}: ${newCount}`);
+        return newCount;
+      });
       
       // Track high score if it's higher than current
-      const userId = getUserId();
       firebase.database().ref(`users/${userId}/high_score`).once('value', snapshot => {
         const highScore = snapshot.val() || 0;
         if (finalScore > highScore) {
           firebase.database().ref(`users/${userId}/high_score`).set(finalScore);
+          debugLog(`Updated high score for user ${userId}: ${finalScore}`);
         }
       });
       
       // Track completion by unique player
-      firebase.database().ref(`users/${userId}/games_completed`).transaction(count => (count || 0) + 1);
+      firebase.database().ref(`users/${userId}/games_completed`).transaction(count => {
+        const newCount = (count || 0) + 1;
+        debugLog(`Updated games completed for user ${userId}: ${newCount}`);
+        return newCount;
+      });
       
-      // Get all users who have completed at least one game
+      // Track completion by unique player for this date
+      firebase.database().ref(`users/${userId}/completions_by_date/${dateString}`).transaction(count => {
+        const newCount = (count || 0) + 1;
+        debugLog(`Updated completions for user ${userId} on date ${dateString}: ${newCount}`);
+        return newCount;
+      });
+      
+      // Get all users who have completed at least one game (overall)
       firebase.database().ref('users').once('value', snapshot => {
-        if (!snapshot.exists()) return;
+        if (!snapshot.exists()) {
+          debugLog('No users found in database');
+          return;
+        }
         
         let uniqueCompletions = 0;
         snapshot.forEach(childSnapshot => {
@@ -280,13 +360,36 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         });
         
-        // Update unique completions count
+        // Update unique completions count (overall)
         firebase.database().ref('stats/unique_completions').set(uniqueCompletions);
+        debugLog(`Updated unique completions count: ${uniqueCompletions}`);
       });
       
-      debugLog(`Game completion tracked: score=${finalScore}, perfect=${isPerfectScore}, date=${dateString}`);
+      // Get all users who have completed a game today
+      firebase.database().ref('users').once('value', snapshot => {
+        if (!snapshot.exists()) {
+          debugLog('No users found in database for today');
+          return;
+        }
+        
+        let todayUniqueCompletions = 0;
+        snapshot.forEach(childSnapshot => {
+          if (childSnapshot.hasChild('completions_by_date') && 
+              childSnapshot.child('completions_by_date').hasChild(dateString) && 
+              childSnapshot.child(`completions_by_date/${dateString}`).val() > 0) {
+            todayUniqueCompletions++;
+          }
+        });
+        
+        // Update unique completions count for today
+        firebase.database().ref(`stats/by_date/${dateString}/unique_completions`).set(todayUniqueCompletions);
+        debugLog(`Updated unique completions count for ${dateString}: ${todayUniqueCompletions}`);
+      });
+      
+      debugLog(`Game completion tracked successfully: score=${finalScore}, perfect=${isPerfectScore}, date=${dateString}`);
     } catch (error) {
       console.error("Error tracking game completion:", error);
+      debugLog(`Error tracking game completion: ${error.message}`);
       // Continue without tracking
     }
   }
@@ -1241,7 +1344,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const unplacedItems = timelineContainer.querySelectorAll('.timeline-item').length;
     
     // If all events have been placed (all historical events minus any unplaced items)
-    if (placedItems.length === historicalEvents.length && unplacedItems === 0) {
+    // Note: We subtract 1 from historicalEvents.length because the first event is automatically placed
+    if (placedItems.length === historicalEvents.length - 1 && unplacedItems === 0) {
       // Game is complete - show share button
       showShareButton();
       
