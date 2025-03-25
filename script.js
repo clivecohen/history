@@ -401,6 +401,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // For desktop drag and drop
     draggables.forEach(draggable => {
       draggable.addEventListener('dragstart', (e) => {
+        // Skip if this item is already placed
+        if (draggable.classList.contains('placed')) {
+          e.preventDefault();
+          return;
+        }
+        
         draggedElement = draggable;
         isDraggingActive = true;
         draggable.classList.add('dragging');
@@ -1069,34 +1075,39 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Touch event handlers for mobile
   function handleTouchStart(e) {
-    e.preventDefault();
+    // Skip if we are already dragging or if this is a placed item
+    if (isDraggingActive || e.target.closest('.item.placed')) return;
     
-    // Only handle touch events if this isn't a placed item
-    if (this.classList.contains('placed')) return;
+    const touchedItem = e.target.closest('.item');
+    if (!touchedItem) return; // Not an item
     
+    // Skip if this is a placed item
+    if (touchedItem.classList.contains('placed')) {
+      return;
+    }
+    
+    e.preventDefault(); // Prevent scrolling and browser handling
+    
+    // Store offsets for positioning during drag
     const touch = e.touches[0];
-    touchY = touch.clientY;
+    const rect = touchedItem.getBoundingClientRect();
     
-    draggedElement = this;
+    touchedItem.dataset.offsetX = touch.clientX - rect.left;
+    touchedItem.dataset.offsetY = touch.clientY - rect.top;
+    touchedItem.dataset.width = rect.width;
+    touchedItem.dataset.height = rect.height;
+    
+    // Mark as dragging
+    draggedElement = touchedItem;
     isDraggingActive = true;
-    this.classList.add('dragging');
+    draggedElement.classList.add('dragging');
     
-    // Create a ghost image for better visual feedback
-    this.style.opacity = '0.6';
-    
-    // Highlight potential drop zone
-    if (this.parentNode === sourceContainer) {
+    if (draggedElement.parentNode === sourceContainer) {
       timelineContainer.classList.add('highlight-dropzone');
     }
     
-    // Store offsets for centered dragging - simpler calculation
-    const rect = this.getBoundingClientRect();
-    this.dataset.offsetX = touch.clientX - rect.left;
-    this.dataset.offsetY = touch.clientY - rect.top;
-    
-    // Store element's dimensions
-    this.dataset.width = rect.width;
-    this.dataset.height = rect.height;
+    // Remember initial position for use with drag
+    touchY = touch.clientY;
     
     // Remember original sizes for animation
     rememberOriginalSizes();
@@ -1216,11 +1227,31 @@ document.addEventListener('DOMContentLoaded', () => {
         
         placedFirstEvent = true;
       } else if (draggedElement.parentNode === timelineContainer) {
+        // Check if this is an item that has already been placed
+        // If so, we shouldn't allow it to be moved
+        if (draggedElement.classList.contains('placed')) {
+          // This is a placed item, don't allow moving it
+          return;
+        }
+        
+        // Store the current state of the item (whether it has a tap button or not)
+        const hadTapButton = draggedElement.classList.contains('timeline-item');
+        
         // Reordering within timeline
         if (afterElement && afterElement !== draggedElement) {
           timelineContainer.insertBefore(draggedElement, afterElement);
         } else if (!afterElement) {
           timelineContainer.appendChild(draggedElement);
+        }
+        
+        // Ensure the item keeps its timeline-item class and tap button
+        if (hadTapButton || !draggedElement.classList.contains('placed')) {
+          draggedElement.classList.add('timeline-item');
+          
+          // Only add the tap button if it doesn't already have one
+          if (!draggedElement.querySelector('.tap-button')) {
+            addTapToPlaceButton(draggedElement);
+          }
         }
       }
     } else {
