@@ -110,8 +110,8 @@ document.addEventListener('DOMContentLoaded', () => {
     },
     {
       year: 2004,
-      event: "North America Cup is contested for a record breaking $1,629,500 purse",
-      fullText: "<b>2004</b>, North America Cup is contested for a record breaking $1,629,500 purse",
+      event: "North America Cup purse is a record breaking $1,629,500",
+      fullText: "<b>2004</b>, North America Cup purse is a record breaking $1,629,500",
       color: "#9C27B0" // Bright purple
     },
     {
