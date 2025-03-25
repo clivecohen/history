@@ -1649,7 +1649,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Reset score and variables
     score = 0;
-    correctAnswerCount = 0; // Reset correct answer counter
+    correctAnswerCount = 1; // First item is already correctly placed
     updateScore();
     updateScoringExplanation(); // Initialize scoring explanation
     sourceContainer.innerHTML = '';
