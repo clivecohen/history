@@ -765,27 +765,8 @@ document.addEventListener('DOMContentLoaded', () => {
       // Calculate progressive points based on number of correct answers
       correctAnswerCount++;
       
-      // Calculate points with the simplified system
-      let pointsEarned = 0;
-      
-      switch(correctAnswerCount) {
-        case 1:
-          pointsEarned = 50;
-          break;
-        case 2:
-          pointsEarned = 100;
-          break;
-        case 3:
-          pointsEarned = 200;
-          break;
-        case 4:
-          pointsEarned = 300;
-          break;
-        case 5:
-        default:
-          pointsEarned = 400;
-          break;
-      }
+      // Each correct answer is worth 100 points
+      const pointsEarned = 100;
       
       score += pointsEarned;
       updateScore();
@@ -931,28 +912,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const scoringExplanation = document.getElementById('scoring-explanation');
     if (!scoringExplanation) return;
     
-    let pointsWorth = 0;
-    
-    // Calculate what the NEXT correct answer will be worth
-    // This matches the simplified scoring system
-    switch(correctAnswerCount) {
-      case 0:
-        pointsWorth = 50; // First answer
-        break;
-      case 1:
-        pointsWorth = 100; // Second answer
-        break;
-      case 2:
-        pointsWorth = 200; // Third answer
-        break;
-      case 3:
-        pointsWorth = 300; // Fourth answer
-        break;
-      case 4:
-      default:
-        pointsWorth = 400; // Fifth answer and beyond
-        break;
-    }
+    // Every correct answer is worth 100 points
+    const pointsWorth = 100;
     
     scoringExplanation.textContent = `Correct answer is worth ${pointsWorth} points`;
   }
