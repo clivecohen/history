@@ -104,21 +104,21 @@ document.addEventListener('DOMContentLoaded', () => {
     },
     {
       year: 1993,
-      event: "First sub-1:50 mile by a pacer in the United States (Staying Together)",
-      fullText: "<b>1993</b>, First sub-1:50 mile by a pacer in the United States (Staying Together)",
+      event: "First sub-1:50 mile by a pacer (Staying Together)",
+      fullText: "<b>1993</b>, First sub-1:50 mile by a pacer (Staying Together)",
       color: "#FF9800" // Bright orange
     },
     {
-      year: 1995,
-      event: "First sub-1:50 mile by a pacer in Canada (Ball And Chain)",
-      fullText: "<b>1995</b>, First sub-1:50 mile by a pacer in Canada (Ball And Chain)",
-      color: "#4CAF50" // Bright green
+      year: 2004,
+      event: "North America Cup is contested for a record breaking $1,629,500 purse",
+      fullText: "<b>2004</b>, North America Cup is contested for a record breaking $1,629,500 purse",
+      color: "#9C27B0" // Bright purple
     },
     {
-      year: 2004,
-      event: "North America Cup purse is a record breaking $1,629,500",
-      fullText: "<b>2004</b>, North America Cup purse is a record breaking $1,629,500",
-      color: "#9C27B0" // Bright purple
+      year: 2020,
+      event: "First sub-1:50 mile by a trotter (Homicide Hunter)",
+      fullText: "<b>2020</b>, First sub-1:50 mile by a trotter (Homicide Hunter)",
+      color: "#4CAF50" // Bright green
     },
     {
       year: 2022,
@@ -171,27 +171,17 @@ document.addEventListener('DOMContentLoaded', () => {
       // Get or create a unique player ID
       const userId = getUserId();
       
-      // Get today's date in YYYY-MM-DD format
-      const today = new Date();
-      const dateString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-      
       // Check if this is a new player
       const isNewPlayer = localStorage.getItem('racing_quiz_played') !== 'true';
       if (isNewPlayer) {
         localStorage.setItem('racing_quiz_played', 'true');
         
-        // Increment unique player count (overall)
+        // Increment unique player count
         firebase.database().ref('stats/unique_players').transaction(count => (count || 0) + 1);
-        
-        // Increment unique player count (by date)
-        firebase.database().ref(`stats/by_date/${dateString}/unique_players`).transaction(count => (count || 0) + 1);
       }
       
-      // Increment total games started (overall)
+      // Increment total games started
       firebase.database().ref('stats/games_started').transaction(count => (count || 0) + 1);
-      
-      // Increment total games started (by date)
-      firebase.database().ref(`stats/by_date/${dateString}/games_started`).transaction(count => (count || 0) + 1);
       
       // Track this specific game session
       const sessionId = 'session_' + Date.now();
@@ -237,10 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Track when a game completes
   function trackGameComplete(finalScore, isPerfectScore) {
     try {
-      if (!isFirebaseAvailable()) {
-        debugLog("Firebase not available for game completion tracking");
-        return;
-      }
+      if (!isFirebaseAvailable()) return;
       
       // Log event in Analytics
       firebase.analytics().logEvent('game_completed', {
@@ -252,106 +239,39 @@ document.addEventListener('DOMContentLoaded', () => {
       const today = new Date();
       const dateString = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
       
-      debugLog(`Tracking game completion for date: ${dateString}`);
+      // Increment games completed counter
+      firebase.database().ref('stats/games_completed').transaction(count => (count || 0) + 1);
       
-      // Get the user ID for tracking
-      const userId = getUserId();
-      
-      // Increment games completed counter (overall)
-      firebase.database().ref('stats/games_completed').transaction(count => {
-        const newCount = (count || 0) + 1;
-        debugLog(`Updated total games completed: ${newCount}`);
-        return newCount;
-      });
-      
-      // Increment games completed counter (by date)
-      firebase.database().ref(`stats/by_date/${dateString}/games_completed`).transaction(count => {
-        const newCount = (count || 0) + 1;
-        debugLog(`Updated games completed for date ${dateString}: ${newCount}`);
-        return newCount;
-      });
-      
-      // Track perfect scores (overall)
+      // Track perfect scores
       if (isPerfectScore) {
-        firebase.database().ref('stats/perfect_scores').transaction(count => {
-          const newCount = (count || 0) + 1;
-          debugLog(`Updated perfect scores: ${newCount}`);
-          return newCount;
-        });
-        
-        // Track perfect scores (by date)
-        firebase.database().ref(`stats/by_date/${dateString}/perfect_scores`).transaction(count => {
-          const newCount = (count || 0) + 1;
-          debugLog(`Updated perfect scores for date ${dateString}: ${newCount}`);
-          return newCount;
-        });
+        firebase.database().ref('stats/perfect_scores').transaction(count => (count || 0) + 1);
       }
       
-      // Add to score distribution (overall)
+      // Add to score distribution
       const scoreKey = Math.floor(finalScore / 100) * 100; // Group scores by hundreds
-      firebase.database().ref(`stats/score_distribution/${scoreKey}`).transaction(count => {
-        const newCount = (count || 0) + 1;
-        debugLog(`Updated score distribution for ${scoreKey}: ${newCount}`);
-        return newCount;
-      });
+      firebase.database().ref(`stats/score_distribution/${scoreKey}`).transaction(count => (count || 0) + 1);
       
-      // Add to score distribution (by date)
-      firebase.database().ref(`stats/by_date/${dateString}/score_distribution/${scoreKey}`).transaction(count => {
-        const newCount = (count || 0) + 1;
-        debugLog(`Updated score distribution for ${scoreKey} on ${dateString}: ${newCount}`);
-        return newCount;
-      });
+      // Track total score for average calculation
+      firebase.database().ref('stats/total_score').transaction(total => (total || 0) + finalScore);
       
-      // Track total score for average calculation (overall)
-      firebase.database().ref('stats/total_score').transaction(total => {
-        const newTotal = (total || 0) + finalScore;
-        debugLog(`Updated total score: ${newTotal}`);
-        return newTotal;
-      });
-      
-      // Track total score for average calculation (by date)
-      firebase.database().ref(`stats/by_date/${dateString}/total_score`).transaction(total => {
-        const newTotal = (total || 0) + finalScore;
-        debugLog(`Updated total score for date ${dateString}: ${newTotal}`);
-        return newTotal;
-      });
-      
-      // Track completion by date (for graph)
-      firebase.database().ref(`stats/completions_by_date/${dateString}`).transaction(count => {
-        const newCount = (count || 0) + 1;
-        debugLog(`Updated completions for ${dateString}: ${newCount}`);
-        return newCount;
-      });
+      // Track completion by date
+      firebase.database().ref(`stats/completions_by_date/${dateString}`).transaction(count => (count || 0) + 1);
       
       // Track high score if it's higher than current
+      const userId = getUserId();
       firebase.database().ref(`users/${userId}/high_score`).once('value', snapshot => {
         const highScore = snapshot.val() || 0;
         if (finalScore > highScore) {
           firebase.database().ref(`users/${userId}/high_score`).set(finalScore);
-          debugLog(`Updated high score for user ${userId}: ${finalScore}`);
         }
       });
       
       // Track completion by unique player
-      firebase.database().ref(`users/${userId}/games_completed`).transaction(count => {
-        const newCount = (count || 0) + 1;
-        debugLog(`Updated games completed for user ${userId}: ${newCount}`);
-        return newCount;
-      });
+      firebase.database().ref(`users/${userId}/games_completed`).transaction(count => (count || 0) + 1);
       
-      // Track completion by unique player for this date
-      firebase.database().ref(`users/${userId}/completions_by_date/${dateString}`).transaction(count => {
-        const newCount = (count || 0) + 1;
-        debugLog(`Updated completions for user ${userId} on date ${dateString}: ${newCount}`);
-        return newCount;
-      });
-      
-      // Get all users who have completed at least one game (overall)
+      // Get all users who have completed at least one game
       firebase.database().ref('users').once('value', snapshot => {
-        if (!snapshot.exists()) {
-          debugLog('No users found in database');
-          return;
-        }
+        if (!snapshot.exists()) return;
         
         let uniqueCompletions = 0;
         snapshot.forEach(childSnapshot => {
@@ -360,36 +280,13 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         });
         
-        // Update unique completions count (overall)
+        // Update unique completions count
         firebase.database().ref('stats/unique_completions').set(uniqueCompletions);
-        debugLog(`Updated unique completions count: ${uniqueCompletions}`);
       });
       
-      // Get all users who have completed a game today
-      firebase.database().ref('users').once('value', snapshot => {
-        if (!snapshot.exists()) {
-          debugLog('No users found in database for today');
-          return;
-        }
-        
-        let todayUniqueCompletions = 0;
-        snapshot.forEach(childSnapshot => {
-          if (childSnapshot.hasChild('completions_by_date') && 
-              childSnapshot.child('completions_by_date').hasChild(dateString) && 
-              childSnapshot.child(`completions_by_date/${dateString}`).val() > 0) {
-            todayUniqueCompletions++;
-          }
-        });
-        
-        // Update unique completions count for today
-        firebase.database().ref(`stats/by_date/${dateString}/unique_completions`).set(todayUniqueCompletions);
-        debugLog(`Updated unique completions count for ${dateString}: ${todayUniqueCompletions}`);
-      });
-      
-      debugLog(`Game completion tracked successfully: score=${finalScore}, perfect=${isPerfectScore}, date=${dateString}`);
+      debugLog(`Game completion tracked: score=${finalScore}, perfect=${isPerfectScore}, date=${dateString}`);
     } catch (error) {
       console.error("Error tracking game completion:", error);
-      debugLog(`Error tracking game completion: ${error.message}`);
       // Continue without tracking
     }
   }
@@ -401,12 +298,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // For desktop drag and drop
     draggables.forEach(draggable => {
       draggable.addEventListener('dragstart', (e) => {
-        // Skip if this item is already placed
-        if (draggable.classList.contains('placed')) {
-          e.preventDefault();
-          return;
-        }
-        
         draggedElement = draggable;
         isDraggingActive = true;
         draggable.classList.add('dragging');
@@ -624,27 +515,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add to item
     item.appendChild(tapButton);
     
-    // Set a timestamp to prevent immediate placement after drag
-    item.dataset.lastDragEnd = Date.now().toString();
-    
     // Handler function for both click and touch events
     const handlePlacement = (e) => {
-      // Don't prevent default here - this lets the tap work naturally
+      e.preventDefault();
       e.stopPropagation(); // Prevent event bubbling
       
       // Only process if the item is in the timeline and has the tappable class
       if (item.classList.contains('tappable')) {
-        // Get the time since last drag ended
-        const lastDragEnd = parseInt(item.dataset.lastDragEnd || '0');
-        const timeSinceDrag = Date.now() - lastDragEnd;
-        
-        // Only proceed if it's been at least 300ms since drag ended
-        // This prevents the dragend event from triggering placement on mobile
-        if (timeSinceDrag < 300) {
-          console.log('Ignoring tap too soon after drag');
-          return;
-        }
-        
         // Add visual feedback
         item.style.transform = 'scale(0.98)';
         
@@ -657,12 +534,8 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     // Add both click and touchend events for better cross-platform support
-    // Attach to the entire item, not just the button
     item.addEventListener('click', handlePlacement);
-    
-    // Don't add the touchend handler to the item - it would conflict with drag operations
-    // Instead, add a separate touchend handler just to the button
-    tapButton.addEventListener('touchend', handlePlacement);
+    item.addEventListener('touchend', handlePlacement);
   }
 
   // Handle finalizing the placement of an item
@@ -765,8 +638,27 @@ document.addEventListener('DOMContentLoaded', () => {
       // Calculate progressive points based on number of correct answers
       correctAnswerCount++;
       
-      // Each correct answer is worth 100 points
-      const pointsEarned = 100;
+      // Calculate points with the simplified system
+      let pointsEarned = 0;
+      
+      switch(correctAnswerCount) {
+        case 1:
+          pointsEarned = 50;
+          break;
+        case 2:
+          pointsEarned = 100;
+          break;
+        case 3:
+          pointsEarned = 200;
+          break;
+        case 4:
+          pointsEarned = 300;
+          break;
+        case 5:
+        default:
+          pointsEarned = 400;
+          break;
+      }
       
       score += pointsEarned;
       updateScore();
@@ -912,8 +804,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const scoringExplanation = document.getElementById('scoring-explanation');
     if (!scoringExplanation) return;
     
-    // Every correct answer is worth 100 points
-    const pointsWorth = 100;
+    let pointsWorth = 0;
+    
+    // Calculate what the NEXT correct answer will be worth
+    // This matches the simplified scoring system
+    switch(correctAnswerCount) {
+      case 0:
+        pointsWorth = 50; // First answer
+        break;
+      case 1:
+        pointsWorth = 100; // Second answer
+        break;
+      case 2:
+        pointsWorth = 200; // Third answer
+        break;
+      case 3:
+        pointsWorth = 300; // Fourth answer
+        break;
+      case 4:
+      default:
+        pointsWorth = 400; // Fifth answer and beyond
+        break;
+    }
     
     scoringExplanation.textContent = `Correct answer is worth ${pointsWorth} points`;
   }
@@ -1054,45 +966,34 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Touch event handlers for mobile
   function handleTouchStart(e) {
-    // Check if we're tapping on a tap button - if so, don't start dragging
-    if (e.target.closest('.tap-button')) {
-      // Let the tap button handle this event
-      return;
-    }
+    e.preventDefault();
     
-    // Skip if we are already dragging or if this is a placed item
-    if (isDraggingActive || e.target.closest('.item.placed')) return;
+    // Only handle touch events if this isn't a placed item
+    if (this.classList.contains('placed')) return;
     
-    const touchedItem = e.target.closest('.item');
-    if (!touchedItem) return; // Not an item
-    
-    // Skip if this is a placed item
-    if (touchedItem.classList.contains('placed')) {
-      return;
-    }
-    
-    e.preventDefault(); // Prevent scrolling and browser handling
-    
-    // Store offsets for positioning during drag
     const touch = e.touches[0];
-    const rect = touchedItem.getBoundingClientRect();
+    touchY = touch.clientY;
     
-    touchedItem.dataset.offsetX = touch.clientX - rect.left;
-    touchedItem.dataset.offsetY = touch.clientY - rect.top;
-    touchedItem.dataset.width = rect.width;
-    touchedItem.dataset.height = rect.height;
-    
-    // Mark as dragging
-    draggedElement = touchedItem;
+    draggedElement = this;
     isDraggingActive = true;
-    draggedElement.classList.add('dragging');
+    this.classList.add('dragging');
     
-    if (draggedElement.parentNode === sourceContainer) {
+    // Create a ghost image for better visual feedback
+    this.style.opacity = '0.6';
+    
+    // Highlight potential drop zone
+    if (this.parentNode === sourceContainer) {
       timelineContainer.classList.add('highlight-dropzone');
     }
     
-    // Remember initial position for use with drag
-    touchY = touch.clientY;
+    // Store offsets for centered dragging - simpler calculation
+    const rect = this.getBoundingClientRect();
+    this.dataset.offsetX = touch.clientX - rect.left;
+    this.dataset.offsetY = touch.clientY - rect.top;
+    
+    // Store element's dimensions
+    this.dataset.width = rect.width;
+    this.dataset.height = rect.height;
     
     // Remember original sizes for animation
     rememberOriginalSizes();
@@ -1169,11 +1070,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const touch = e.changedTouches ? e.changedTouches[0] : null;
     const currentY = touch ? touch.clientY : 0;
     
-    // Check if we're tapping on a tap button directly - if so, let it handle the event
-    if (e.target.closest('.tap-button')) {
-      return;
-    }
-    
     // Reset positioning to prepare for insertion
     draggedElement.style.position = '';
     draggedElement.style.left = '';
@@ -1188,32 +1084,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const isOverTimeline = 
       currentY >= timelineRect.top && 
       currentY <= timelineRect.bottom;
-      
-    // Before we continue with the drop, check if this was a short tap rather than a drag
-    // This helps with clicking on items that are already in the timeline
-    const isTap = Math.abs(touchY - currentY) < 5; // If barely moved, consider it a tap
-    
-    // If it's a tap on a tappable item, this might be a placement attempt
-    if (isTap && draggedElement.classList.contains('tappable')) {
-      // Update the timestamp but let the click handler deal with it
-      draggedElement.dataset.lastDragEnd = Date.now().toString();
-      
-      // Clean up drag state
-      draggedElement.classList.remove('dragging');
-      draggedElement.style.opacity = '1';
-      timelineContainer.classList.remove('active-dropzone');
-      timelineContainer.classList.remove('highlight-dropzone');
-      resetItemsAnimation();
-      
-      // Reset drag tracking variables
-      draggedElement = null;
-      isDraggingActive = false;
-      lastHoveredIndex = -1;
-      checkEmpty();
-      
-      // Let the click event fire naturally
-      return;
-    }
     
     if (isOverTimeline) {
       // Place the item in the timeline at the appropriate position
@@ -1243,34 +1113,11 @@ document.addEventListener('DOMContentLoaded', () => {
         
         placedFirstEvent = true;
       } else if (draggedElement.parentNode === timelineContainer) {
-        // Check if this is an item that has already been placed
-        // If so, we shouldn't allow it to be moved
-        if (draggedElement.classList.contains('placed')) {
-          // This is a placed item, don't allow moving it
-          return;
-        }
-        
-        // Store the current state of the item (whether it has a tap button or not)
-        const hadTapButton = draggedElement.classList.contains('timeline-item');
-        
         // Reordering within timeline
         if (afterElement && afterElement !== draggedElement) {
           timelineContainer.insertBefore(draggedElement, afterElement);
         } else if (!afterElement) {
           timelineContainer.appendChild(draggedElement);
-        }
-        
-        // Ensure the item keeps its timeline-item class and tap button
-        if (hadTapButton || !draggedElement.classList.contains('placed')) {
-          draggedElement.classList.add('timeline-item');
-          
-          // Only add the tap button if it doesn't already have one
-          if (!draggedElement.querySelector('.tap-button')) {
-            addTapToPlaceButton(draggedElement);
-          } else {
-            // If it already has a tap button, update the lastDragEnd timestamp
-            draggedElement.dataset.lastDragEnd = Date.now().toString();
-          }
         }
       }
     } else {
@@ -1281,11 +1128,6 @@ document.addEventListener('DOMContentLoaded', () => {
       } else if (draggedElement.classList.contains('timeline-item')) {
         // If it was already in the timeline but dragged out, return it to its position
         // No need to do anything as it's already in the correct DOM position
-        
-        // Update the lastDragEnd timestamp
-        if (draggedElement.classList.contains('timeline-item')) {
-          draggedElement.dataset.lastDragEnd = Date.now().toString();
-        }
       } else if (draggedElement.parentNode === sourceContainer) {
         // If it was from the source and dropped outside, make sure it stays in the source
         // No action needed as it's already in the correct position
@@ -1301,11 +1143,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Reset animations
     resetItemsAnimation();
-    
-    // Before clearing draggedElement, update its lastDragEnd time if it's a timeline item
-    if (draggedElement && draggedElement.classList.contains('timeline-item')) {
-      draggedElement.dataset.lastDragEnd = Date.now().toString();
-    }
     
     draggedElement = null;
     isDraggingActive = false;
@@ -1403,7 +1240,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const placedItems = timelineContainer.querySelectorAll('.item.placed');
     const unplacedItems = timelineContainer.querySelectorAll('.timeline-item').length;
     
-    // If all events have been placed (should be all historical events in total, including the first auto-placed one)
+    // If all events have been placed (all historical events minus any unplaced items)
     if (placedItems.length === historicalEvents.length && unplacedItems === 0) {
       // Game is complete - show share button
       showShareButton();
@@ -1419,7 +1256,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Replace the Event Stack with Final Score display
   function displayFinalScore() {
     // Check if player got a perfect score (all items placed correctly)
-    const isPerfectScore = correctAnswerCount === historicalEvents.length;
+    const isPerfectScore = correctAnswerCount === historicalEvents.length - 1;
     
     // Track game completion for statistics
     trackGameComplete(score, isPerfectScore);
@@ -1449,34 +1286,16 @@ document.addEventListener('DOMContentLoaded', () => {
     finalScoreDisplay.className = 'final-score-display';
     
     const finalScoreTitle = document.createElement('h2');
-    finalScoreTitle.textContent = isPerfectScore ? 'PERFECT GAME!' : 'FINAL SCORE';
+    finalScoreTitle.textContent = isPerfectScore ? 'PERFECT SCORE' : 'FINAL SCORE';
     finalScoreTitle.className = 'final-score-title';
-    if (isPerfectScore) {
-      finalScoreTitle.style.color = '#e74c3c'; // Bright red for perfect game
-      finalScoreTitle.style.fontSize = '1.6em'; // Larger font
-    }
     
     const finalScoreValue = document.createElement('div');
-    finalScoreValue.textContent = isPerfectScore ? `${score} - PERFECT!` : score;
+    finalScoreValue.textContent = score;
     finalScoreValue.className = 'final-score-value';
     
     // Assemble the final score display (without trophy icon)
     finalScoreDisplay.appendChild(finalScoreTitle);
     finalScoreDisplay.appendChild(finalScoreValue);
-    
-    // If it's a perfect game, add a special effect
-    if (isPerfectScore) {
-      // Add a trophy or star emoji
-      const perfectIcon = document.createElement('div');
-      perfectIcon.textContent = '🏆';
-      perfectIcon.style.fontSize = '2.5em';
-      perfectIcon.style.marginTop = '10px';
-      perfectIcon.style.marginBottom = '10px';
-      finalScoreDisplay.insertBefore(perfectIcon, finalScoreValue);
-      
-      // Add a golden glow to the entire display
-      finalScoreDisplay.style.boxShadow = '0 0 20px rgba(255, 215, 0, 0.7)';
-    }
     
     // Move the share button into the final score display
     if (shareContainer) {
@@ -1523,11 +1342,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // Share score via the Web Share API if available
   function shareScore() {
     // Check if player got a perfect score
-    const isPerfectScore = correctAnswerCount === historicalEvents.length;
+    const isPerfectScore = correctAnswerCount === historicalEvents.length - 1;
     
     // Different text based on whether score is perfect or not
     const shareText = isPerfectScore
-      ? "PERFECT GAME! I scored 500 points in the Racing Quiz game! Can you match my perfect score?"
+      ? "I got a perfect score in the Racing Quiz game! How will you do?"
       : `I scored ${score} points in the Racing Quiz Game! Can you beat my score?`;
     
     const shareUrl = window.location.href;
@@ -1535,7 +1354,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check if the Web Share API is available
     if (navigator.share) {
       navigator.share({
-        title: isPerfectScore ? 'Racing Quiz Game - PERFECT GAME!' : 'Racing Quiz Game',
+        title: 'Racing Quiz Game',
         text: shareText,
         url: shareUrl,
       })
@@ -1628,7 +1447,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Reset score and variables
     score = 0;
-    correctAnswerCount = 1; // First item is already correctly placed
+    correctAnswerCount = 0; // Reset correct answer counter
     updateScore();
     updateScoringExplanation(); // Initialize scoring explanation
     sourceContainer.innerHTML = '';
