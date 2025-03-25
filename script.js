@@ -624,6 +624,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add to item
     item.appendChild(tapButton);
     
+    // Set a timestamp to prevent immediate placement after drag
+    item.dataset.lastDragEnd = Date.now().toString();
+    
     // Handler function for both click and touch events
     const handlePlacement = (e) => {
       e.preventDefault();
@@ -631,6 +634,17 @@ document.addEventListener('DOMContentLoaded', () => {
       
       // Only process if the item is in the timeline and has the tappable class
       if (item.classList.contains('tappable')) {
+        // Get the time since last drag ended
+        const lastDragEnd = parseInt(item.dataset.lastDragEnd || '0');
+        const timeSinceDrag = Date.now() - lastDragEnd;
+        
+        // Only proceed if it's been at least 300ms since drag ended
+        // This prevents the dragend event from triggering placement on mobile
+        if (timeSinceDrag < 300) {
+          console.log('Ignoring tap too soon after drag');
+          return;
+        }
+        
         // Add visual feedback
         item.style.transform = 'scale(0.98)';
         
@@ -1075,6 +1089,12 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Touch event handlers for mobile
   function handleTouchStart(e) {
+    // Check if we're tapping on a tap button - if so, don't start dragging
+    if (e.target.closest('.tap-button')) {
+      // Let the tap button handle this event
+      return;
+    }
+    
     // Skip if we are already dragging or if this is a placed item
     if (isDraggingActive || e.target.closest('.item.placed')) return;
     
@@ -1251,6 +1271,9 @@ document.addEventListener('DOMContentLoaded', () => {
           // Only add the tap button if it doesn't already have one
           if (!draggedElement.querySelector('.tap-button')) {
             addTapToPlaceButton(draggedElement);
+          } else {
+            // If it already has a tap button, update the lastDragEnd timestamp
+            draggedElement.dataset.lastDragEnd = Date.now().toString();
           }
         }
       }
@@ -1262,6 +1285,11 @@ document.addEventListener('DOMContentLoaded', () => {
       } else if (draggedElement.classList.contains('timeline-item')) {
         // If it was already in the timeline but dragged out, return it to its position
         // No need to do anything as it's already in the correct DOM position
+        
+        // Update the lastDragEnd timestamp
+        if (draggedElement.classList.contains('timeline-item')) {
+          draggedElement.dataset.lastDragEnd = Date.now().toString();
+        }
       } else if (draggedElement.parentNode === sourceContainer) {
         // If it was from the source and dropped outside, make sure it stays in the source
         // No action needed as it's already in the correct position
@@ -1277,6 +1305,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Reset animations
     resetItemsAnimation();
+    
+    // Before clearing draggedElement, update its lastDragEnd time if it's a timeline item
+    if (draggedElement && draggedElement.classList.contains('timeline-item')) {
+      draggedElement.dataset.lastDragEnd = Date.now().toString();
+    }
     
     draggedElement = null;
     isDraggingActive = false;
