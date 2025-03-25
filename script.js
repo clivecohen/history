@@ -1449,16 +1449,34 @@ document.addEventListener('DOMContentLoaded', () => {
     finalScoreDisplay.className = 'final-score-display';
     
     const finalScoreTitle = document.createElement('h2');
-    finalScoreTitle.textContent = isPerfectScore ? 'PERFECT SCORE' : 'FINAL SCORE';
+    finalScoreTitle.textContent = isPerfectScore ? 'PERFECT GAME!' : 'FINAL SCORE';
     finalScoreTitle.className = 'final-score-title';
+    if (isPerfectScore) {
+      finalScoreTitle.style.color = '#e74c3c'; // Bright red for perfect game
+      finalScoreTitle.style.fontSize = '1.6em'; // Larger font
+    }
     
     const finalScoreValue = document.createElement('div');
-    finalScoreValue.textContent = score;
+    finalScoreValue.textContent = isPerfectScore ? `${score} - PERFECT!` : score;
     finalScoreValue.className = 'final-score-value';
     
     // Assemble the final score display (without trophy icon)
     finalScoreDisplay.appendChild(finalScoreTitle);
     finalScoreDisplay.appendChild(finalScoreValue);
+    
+    // If it's a perfect game, add a special effect
+    if (isPerfectScore) {
+      // Add a trophy or star emoji
+      const perfectIcon = document.createElement('div');
+      perfectIcon.textContent = '🏆';
+      perfectIcon.style.fontSize = '2.5em';
+      perfectIcon.style.marginTop = '10px';
+      perfectIcon.style.marginBottom = '10px';
+      finalScoreDisplay.insertBefore(perfectIcon, finalScoreValue);
+      
+      // Add a golden glow to the entire display
+      finalScoreDisplay.style.boxShadow = '0 0 20px rgba(255, 215, 0, 0.7)';
+    }
     
     // Move the share button into the final score display
     if (shareContainer) {
@@ -1509,7 +1527,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Different text based on whether score is perfect or not
     const shareText = isPerfectScore
-      ? "I got a perfect score in the Racing Quiz game! How will you do?"
+      ? "PERFECT GAME! I scored 500 points in the Racing Quiz game! Can you match my perfect score?"
       : `I scored ${score} points in the Racing Quiz Game! Can you beat my score?`;
     
     const shareUrl = window.location.href;
@@ -1517,7 +1535,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check if the Web Share API is available
     if (navigator.share) {
       navigator.share({
-        title: 'Racing Quiz Game',
+        title: isPerfectScore ? 'Racing Quiz Game - PERFECT GAME!' : 'Racing Quiz Game',
         text: shareText,
         url: shareUrl,
       })
