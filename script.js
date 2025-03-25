@@ -104,21 +104,21 @@ document.addEventListener('DOMContentLoaded', () => {
     },
     {
       year: 1993,
-      event: "First sub-1:50 mile by a pacer (Staying Together)",
-      fullText: "<b>1993</b>, First sub-1:50 mile by a pacer (Staying Together)",
+      event: "First sub-1:50 mile by a pacer in the United States (Staying Together)",
+      fullText: "<b>1993</b>, First sub-1:50 mile by a pacer in the United States (Staying Together)",
       color: "#FF9800" // Bright orange
+    },
+    {
+      year: 1995,
+      event: "First sub-1:50 mile by a pacer in Canada (Ball And Chain)",
+      fullText: "<b>1995</b>, First sub-1:50 mile by a pacer in Canada (Ball And Chain)",
+      color: "#4CAF50" // Bright green
     },
     {
       year: 2004,
       event: "North America Cup purse is a record breaking $1,629,500",
       fullText: "<b>2004</b>, North America Cup purse is a record breaking $1,629,500",
       color: "#9C27B0" // Bright purple
-    },
-    {
-      year: 2020,
-      event: "First sub-1:50 mile by a trotter (Homicide Hunter)",
-      fullText: "<b>2020</b>, First sub-1:50 mile by a trotter (Homicide Hunter)",
-      color: "#4CAF50" // Bright green
     },
     {
       year: 2022,
