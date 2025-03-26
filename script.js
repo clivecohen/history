@@ -291,6 +291,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
   
+  // Add function to adjust timeline height based on item count
+  function adjustTimelineHeight() {
+    const timelineItems = timelineContainer.querySelectorAll('.item');
+    
+    if (timelineItems.length >= 3) {
+      // Add expanded class for 3+ items
+      timelineContainer.classList.add('expanded-timeline');
+      
+      // Set inline styles for immediate effect
+      timelineContainer.style.paddingTop = '10%';
+      timelineContainer.style.paddingBottom = '10%';
+    } else {
+      // Remove expanded class when fewer than 3 items
+      timelineContainer.classList.remove('expanded-timeline');
+      timelineContainer.style.paddingTop = '';
+      timelineContainer.style.paddingBottom = '';
+    }
+  }
+  
   // Initialize drag and drop
   function initDragAndDrop() {
     const draggables = document.querySelectorAll('.item:not(.placed)');
@@ -445,6 +464,9 @@ document.addEventListener('DOMContentLoaded', () => {
         draggedElement = null;
         isDraggingActive = false;
       }
+      
+      // Adjust timeline height based on number of items
+      adjustTimelineHeight();
     });
   }
 
@@ -751,6 +773,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 300);
     }
     
+    // Adjust timeline height after finalizing placement
+    adjustTimelineHeight();
+    
     // Check if this was the last item to be placed
     setTimeout(() => {
       checkGameCompletion();
@@ -890,6 +915,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sourceContainer.querySelectorAll('.item').length === 0 && stackedEvents.length > 0) {
       revealNextInStack();
     }
+    
+    // Adjust timeline height after removal
+    adjustTimelineHeight();
   }
   
   // Remember original positions of items for smooth animations
@@ -1143,6 +1171,9 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
       }
+      
+      // Adjust timeline height based on new item count
+      adjustTimelineHeight();
     } else {
       // If dropped outside the timeline, return to stack
       if (draggedElement.parentNode !== timelineContainer && 
@@ -1495,6 +1526,11 @@ document.addEventListener('DOMContentLoaded', () => {
     draggedElement = null;
     isDraggingActive = false;
     stackedEvents = [];
+    
+    // Make sure timeline is at default height
+    timelineContainer.classList.remove('expanded-timeline');
+    timelineContainer.style.paddingTop = '';
+    timelineContainer.style.paddingBottom = '';
     
     // Select game mode
     currentMode = {
