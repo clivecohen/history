@@ -554,11 +554,32 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Remove any existing event listeners to prevent duplicates
     item.removeEventListener('click', handleItemPlacement);
-    item.removeEventListener('touchend', handleItemTouchEnd);
     
-    // Add both click and touchend events for better cross-platform support
+    // Add click event for desktop
     item.addEventListener('click', handleItemPlacement);
-    item.addEventListener('touchend', handleItemTouchEnd);
+    
+    // For mobile, add a dedicated tap handler to the button itself for more reliable tapping
+    tapButton.addEventListener('touchstart', function(e) {
+      // Prevent this touchstart from triggering drag
+      e.stopPropagation();
+    }, { passive: false });
+    
+    tapButton.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // Only process if parent item is in the timeline and has the tappable class
+      if (item.classList.contains('tappable')) {
+        // Add visual feedback
+        item.style.transform = 'scale(0.98)';
+        
+        // Small delay for visual feedback
+        setTimeout(() => {
+          item.style.transform = '';
+          finalizeItemPlacement(item);
+        }, 100);
+      }
+    });
   }
   
   // Separate handler for click events
@@ -585,476 +606,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
   
-  // Separate handler for touch events
-  function handleItemTouchEnd(e) {
-    // Only handle touch events that are intended as taps, not drags
-    if (isDraggingActive) {
-      debugLog("Touch end ignored - active drag in progress");
-      return;
-    }
-    
-    // Only handle if not recently dragged
-    if (recentlyDragged) {
-      debugLog("Touch end ignored - recent drag detected");
-      return;
-    }
-    
-    // Get the touch that ended
-    const touch = e.changedTouches ? e.changedTouches[0] : null;
-    if (!touch) return;
-    
-    // Check if the touch is within this element
-    const rect = this.getBoundingClientRect();
-    if (
-      touch.clientX >= rect.left && touch.clientX <= rect.right &&
-      touch.clientY >= rect.top && touch.clientY <= rect.bottom
-    ) {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      // Add visual feedback
-      this.style.transform = 'scale(0.98)';
-      
-      // Process the placement with a small delay for better visual feedback
-      setTimeout(() => {
-        this.style.transform = '';
-        finalizeItemPlacement(this);
-      }, 100);
-    }
-  }
-
-  // Handle finalizing the placement of an item
-  function finalizeItemPlacement(item) {
-    debugLog("Finalizing placement of item");
-    
-    // Safety checks
-    if (!item || !item.parentNode) {
-      debugLog("Error: Invalid item or item not in DOM");
-      return;
-    }
-    
-    // Make sure item is in the timeline
-    if (!timelineContainer.contains(item)) {
-      debugLog("Error: Item not in timeline container");
-      return;
-    }
-    
-    // Get the current position in the timeline
-    const timelineItems = [...timelineContainer.querySelectorAll('.item')];
-    const placedIndex = timelineItems.indexOf(item);
-    
-    if (placedIndex === -1) {
-      debugLog("Error: Item not found in timeline items collection");
-      return;
-    }
-    
-    // Find the correct position for this item
-    const yearToCheck = parseInt(item.dataset.year);
-    let isCorrect = false;
-    
-    // Determine if placement is correct
-    if (timelineItems.length === 1) {
-      // If it's the only item, it's correct
-      isCorrect = true;
-    } else {
-      // Check if the current position is correct
-      if (placedIndex === 0) {
-        // If it's at the beginning, check if it's before the next item
-        const nextItemYear = parseInt(timelineItems[1].dataset.year);
-        isCorrect = yearToCheck < nextItemYear;
-      } else if (placedIndex === timelineItems.length - 1) {
-        // If it's at the end, check if it's after the previous item
-        const prevItemYear = parseInt(timelineItems[placedIndex - 1].dataset.year);
-        isCorrect = yearToCheck > prevItemYear;
-      } else {
-        // If it's in the middle, check both sides
-        const prevItemYear = parseInt(timelineItems[placedIndex - 1].dataset.year);
-        const nextItemYear = parseInt(timelineItems[placedIndex + 1].dataset.year);
-        isCorrect = yearToCheck > prevItemYear && yearToCheck < nextItemYear;
-      }
-    }
-    
-    debugLog("Placement correct? " + isCorrect);
-    
-    // Remove the timeline-item class which enabled the tap button
-    item.classList.remove('timeline-item');
-    
-    // Remove the tappable class to disable clicking
-    item.classList.remove('tappable');
-    
-    // Remove the button immediately
-    const tapButton = item.querySelector('.tap-button');
-    if (tapButton) {
-      tapButton.remove();
-    }
-    
-    // Mark the item as placed and disable dragging
-    item.classList.add('placed');
-    item.draggable = false;
-    
-    // Ensure all positioning styles are reset so the item stays in place
-    item.style.position = '';
-    item.style.top = '';
-    item.style.left = '';
-    item.style.width = '';
-    item.style.height = '';
-    item.style.transform = '';
-    item.style.zIndex = '';
-    item.style.webkitTransform = '';
-    
-    // Force styles to be applied (helps with Safari)
-    void item.offsetWidth;
-    
-    // Replace the text with full version including bold year
-    item.innerHTML = item.dataset.fullText;
-    
-    // Ensure the color is preserved
-    item.style.backgroundColor = item.dataset.color;
-    
-    // Force another style application
-    void item.offsetWidth;
-    
-    // Safari-specific fix: Ensure the item is visible
-    item.style.opacity = '1';
-    item.style.display = 'block';
-    
-    // Update score and display feedback
-    if (isCorrect) {
-      // Calculate progressive points based on number of correct answers
-      correctAnswerCount++;
-      
-      // Calculate points with the simplified system
-      let pointsEarned = 0;
-      
-      switch(correctAnswerCount) {
-        case 1:
-          pointsEarned = 50;
-          break;
-        case 2:
-          pointsEarned = 100;
-          break;
-        case 3:
-          pointsEarned = 200;
-          break;
-        case 4:
-          pointsEarned = 300;
-          break;
-        case 5:
-        default:
-          pointsEarned = 400;
-          break;
-      }
-      
-      score += pointsEarned;
-      updateScore();
-      updateScoringExplanation(); // Update scoring explanation for next piece
-      debugLog(`Showing correct feedback: +${pointsEarned} points`);
-      
-      // Track correct placement for statistics
-      trackPlacement(true, yearToCheck);
-      
-      // Safari-friendly way of showing feedback
-      showFeedback(`Correct! +${pointsEarned} points`, 'correct');
-      
-      // Small delay for Safari
-      setTimeout(() => {
-        // Add fireworks animation - Safari friendly approach
-        const fireworksElement = document.createElement('div');
-        fireworksElement.className = 'fireworks-container';
-        item.appendChild(fireworksElement);
-        
-        debugLog("Creating fireworks");
-        createSimplifiedFireworks(fireworksElement);
-        
-        // Remove fireworks after animation
-        setTimeout(() => {
-          if (fireworksElement.parentNode) {
-            fireworksElement.parentNode.removeChild(fireworksElement);
-          }
-        }, 1500);
-      }, 50);
-      
-    } else {
-      debugLog("Showing incorrect feedback");
-      
-      // Track incorrect placement for statistics
-      trackPlacement(false, yearToCheck);
-      
-      // Safari-friendly way of showing feedback
-      showFeedback('Incorrect placement! No points', 'incorrect');
-      
-      // Small delay for Safari
-      setTimeout(() => {
-        // Create thumbs down element - Safari friendly
-        debugLog("Creating thumbs down");
-        const thumbsElement = document.createElement('div');
-        thumbsElement.className = 'thumbs-down';
-        thumbsElement.innerHTML = '👎';
-        thumbsElement.style.position = 'absolute';
-        thumbsElement.style.fontSize = '40px';
-        thumbsElement.style.top = '50%';
-        thumbsElement.style.left = '50%';
-        thumbsElement.style.transform = 'translate(-50%, -50%)';
-        thumbsElement.style.zIndex = '100';
-        thumbsElement.style.color = '#e74c3c';
-        item.appendChild(thumbsElement);
-        
-        // Manually animate the thumbs down for Safari
-        setTimeout(() => { thumbsElement.style.opacity = '1'; }, 50);
-        
-        // Remove thumbs down after animation
-        setTimeout(() => {
-          if (thumbsElement.parentNode) {
-            thumbsElement.parentNode.removeChild(thumbsElement);
-          }
-          
-          // Move to correct position after feedback
-          moveItemToCorrectPosition(item, timelineItems);
-        }, 1000);
-      }, 50);
-    }
-    
-    // Now that we've finalized the placement, reveal the next item if this was from the source
-    if (item.classList.contains('top-of-stack')) {
-      item.classList.remove('top-of-stack');
-      
-      // Wait a bit before revealing the next item for better visual feedback
-      setTimeout(() => {
-        revealNextInStack();
-        updateStackCount();
-      }, 300);
-    }
-    
-    // Adjust timeline height after finalizing placement
-    adjustTimelineHeight();
-    
-    // Check if this was the last item to be placed
-    setTimeout(() => {
-      checkGameCompletion();
-    }, 1500);
-  }
-
-  // Simplified fireworks for Safari
-  function createSimplifiedFireworks(container) {
-    const colors = ['#e74c3c', '#f1c40f', '#2ecc71', '#3498db', '#9b59b6'];
-    const particleCount = 20;
-    
-    for (let i = 0; i < particleCount; i++) {
-      const firework = document.createElement('div');
-      firework.style.position = 'absolute';
-      firework.style.width = '8px';
-      firework.style.height = '8px';
-      firework.style.borderRadius = '50%';
-      firework.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-      firework.style.opacity = '0';
-      
-      // Random position
-      const angle = Math.random() * Math.PI * 2;
-      const distance = 30 + Math.random() * 40;
-      const x = Math.cos(angle) * distance;
-      const y = Math.sin(angle) * distance;
-      
-      // Set initial position
-      firework.style.top = '50%';
-      firework.style.left = '50%';
-      
-      container.appendChild(firework);
-      
-      // Manually animate for Safari
-      setTimeout(() => {
-        firework.style.opacity = '1';
-        firework.style.transform = `translate(${x}px, ${y}px)`;
-        firework.style.transition = 'all 0.5s ease-out';
-        
-        // Fade out
-        setTimeout(() => {
-          firework.style.opacity = '0';
-        }, 300);
-      }, Math.random() * 200);
-    }
-  }
-
-  // Update score display
-  function updateScore() {
-    scoreDisplay.textContent = score;
-    
-    // Add glowing effect when score increases
-    scoreDisplay.classList.add('score-glow');
-    
-    // Remove the glow effect after animation completes
-    setTimeout(() => {
-      scoreDisplay.classList.remove('score-glow');
-    }, 1000);
-  }
-
-  // Update the scoring explanation based on current correct answer count
-  function updateScoringExplanation() {
-    const scoringExplanation = document.getElementById('scoring-explanation');
-    if (!scoringExplanation) return;
-    
-    let pointsWorth = 0;
-    
-    // Calculate what the NEXT correct answer will be worth
-    // This matches the simplified scoring system
-    switch(correctAnswerCount) {
-      case 0:
-        pointsWorth = 50; // First answer
-        break;
-      case 1:
-        pointsWorth = 100; // Second answer
-        break;
-      case 2:
-        pointsWorth = 200; // Third answer
-        break;
-      case 3:
-        pointsWorth = 300; // Fourth answer
-        break;
-      case 4:
-      default:
-        pointsWorth = 400; // Fifth answer and beyond
-        break;
-    }
-    
-    scoringExplanation.textContent = `Correct answer is worth ${pointsWorth} points`;
-  }
-
-  // Show feedback briefly
-  function showFeedback(message, className) {
-    debugLog("Showing feedback: " + message);
-    
-    resultDisplay.textContent = message;
-    resultDisplay.className = className;
-    
-    // Ensure the feedback is visible
-    resultDisplay.style.display = 'block';
-    resultDisplay.style.opacity = '1';
-    
-    // Clear after 2 seconds
-    setTimeout(() => {
-      // Fade out slowly
-      resultDisplay.style.transition = 'opacity 0.5s';
-      resultDisplay.style.opacity = '0';
-      
-      // Then clear text
-      setTimeout(() => {
-        resultDisplay.textContent = '';
-        resultDisplay.className = '';
-        resultDisplay.style.transition = '';
-        resultDisplay.style.opacity = '1';
-      }, 500);
-    }, 2000);
-  }
-
-  // Return an item to the stack if dropped outside a valid container
-  function returnToStack(item) {
-    // Create an event object to put back in the stack
-    const returnedEvent = {
-      year: item.dataset.year,
-      event: item.textContent,
-      fullText: item.dataset.fullText,
-      color: item.dataset.color
-    };
-    
-    // Add at beginning to be next up
-    stackedEvents.unshift(returnedEvent);
-    
-    // Remove the dragged element
-    if (item.parentNode) {
-      item.parentNode.removeChild(item);
-    }
-    
-    // Ensure there's always a top item visible
-    if (sourceContainer.querySelectorAll('.item').length === 0 && stackedEvents.length > 0) {
-      revealNextInStack();
-    }
-    
-    // Adjust timeline height after removal
-    adjustTimelineHeight();
-  }
-  
-  // Remember original positions of items for smooth animations
-  function rememberOriginalSizes() {
-    const timelineItems = [...timelineContainer.querySelectorAll('.item')];
-    timelineItems.forEach(item => {
-      if (!item.dataset.originalHeight) {
-        item.dataset.originalHeight = `${item.offsetHeight}px`;
-      }
-    });
-  }
-  
-  // Animate items to make space for dragged item
-  function animateItemsToMakeSpace(hoverIndex, items) {
-    debugLog("Animating items to make space at index: " + hoverIndex);
-    
-    // Reset any previous animations first
-    resetItemsAnimation();
-    
-    // Apply animation to items
-    items.forEach((item, index) => {
-      // Skip the item being dragged itself
-      if (item === draggedElement) return;
-      
-      // Skip special animation states
-      if (item.classList.contains('shrinking') || 
-          item.classList.contains('expanding')) {
-        return;
-      }
-      
-      // Set transition for smoother animation - use a faster transition for mobile
-      const isMobile = 'ontouchstart' in window;
-      const transitionSpeed = isMobile ? '0.1s' : '0.2s'; // Even faster on mobile
-      item.style.transition = `transform ${transitionSpeed} ease-out`;
-      
-      if (index >= hoverIndex) {
-        // Move items below hover point down
-        // Use a larger gap for better visibility on mobile
-        const moveDistance = isMobile ? 30 : 15; // Increased distance for mobile
-        item.style.transform = `translateY(${moveDistance}px)`;
-        debugLog(`Moving item ${index} down by ${moveDistance}px`);
-      } else {
-        // Ensure items above hover point are reset
-        item.style.transform = '';
-      }
-    });
-  }
-  
-  // Reset all animation styles
-  function resetItemsAnimation() {
-    const allItems = [
-      ...sourceContainer.querySelectorAll('.item'),
-      ...timelineContainer.querySelectorAll('.item')
-    ];
-    
-    const isMobile = 'ontouchstart' in window;
-    const resetDelay = isMobile ? 100 : 200; // Even faster reset on mobile
-    
-    allItems.forEach(item => {
-      // Skip the item being dragged
-      if (item === draggedElement) return;
-      
-      // Skip special animation states
-      if (item.classList.contains('shrinking') || 
-          item.classList.contains('expanding')) {
-        return;
-      }
-      
-      // Ensure transition is set for smooth reset
-      if (!item.style.transition) {
-        const transitionSpeed = isMobile ? '0.1s' : '0.2s';
-        item.style.transition = `transform ${transitionSpeed} ease-out`;
-      }
-      
-      item.style.transform = '';
-      
-      // Use a shorter delay before removing transition
-      setTimeout(() => {
-        if (!item.classList.contains('dragging')) {
-          item.style.transition = '';
-        }
-      }, resetDelay);
-    });
-  }
-  
   // Touch event handlers for mobile
   function handleTouchStart(e) {
     e.preventDefault();
@@ -1073,6 +624,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const touch = e.touches[0];
     touchY = touch.clientY;
+    
+    // Track initial touch position to determine if this is a drag or tap
+    this.dataset.touchStartX = touch.clientX;
+    this.dataset.touchStartY = touch.clientY;
     
     draggedElement = this;
     isDraggingActive = true;
@@ -1168,10 +723,30 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!isDraggingActive || !draggedElement) return;
     
     const touch = e.changedTouches ? e.changedTouches[0] : null;
-    const currentY = touch ? touch.clientY : 0;
+    if (!touch) {
+      // Clean up and return if no touch data
+      draggedElement.classList.remove('dragging');
+      draggedElement.style.opacity = '1';
+      draggedElement = null;
+      isDraggingActive = false;
+      return;
+    }
+    
+    const currentY = touch.clientY;
     
     // Store the dragged element in a variable to use later
     const draggedItem = draggedElement;
+    
+    // Check if this was a tap rather than a drag
+    const startX = parseFloat(draggedItem.dataset.touchStartX || 0);
+    const startY = parseFloat(draggedItem.dataset.touchStartY || 0);
+    const moveDistance = Math.sqrt(
+      Math.pow(touch.clientX - startX, 2) + 
+      Math.pow(touch.clientY - startY, 2)
+    );
+    
+    // If moved less than 10px, this was likely intended as a tap
+    const wasTap = moveDistance < 10;
     
     // Reset positioning to prepare for insertion
     draggedElement.style.position = '';
@@ -1215,6 +790,18 @@ document.addEventListener('DOMContentLoaded', () => {
         addTapToPlaceButton(draggedElement);
         
         placedFirstEvent = true;
+        
+        // If this was actually a tap, and we just moved to timeline, immediately place it
+        if (wasTap) {
+          debugLog("Detected tap during move to timeline, processing immediate placement");
+          // Wait a moment for DOM updates to settle
+          setTimeout(() => {
+            // Verify item is still valid before placement
+            if (draggedItem && draggedItem.parentNode === timelineContainer && draggedItem.classList.contains('tappable')) {
+              finalizeItemPlacement(draggedItem);
+            }
+          }, 50);
+        }
       } else if (draggedElement.parentNode === timelineContainer) {
         // Reordering within timeline
         if (afterElement && afterElement !== draggedElement) {
@@ -1232,6 +819,18 @@ document.addEventListener('DOMContentLoaded', () => {
           // Make sure the tap button exists
           if (!draggedElement.querySelector('.tap-button')) {
             addTapToPlaceButton(draggedElement);
+          }
+          
+          // If this was a tap rather than a drag, process placement immediately
+          if (wasTap) {
+            debugLog("Detected tap during reorder, processing immediate placement");
+            // Wait a moment for DOM updates to settle
+            setTimeout(() => {
+              // Verify item is still valid before placement
+              if (draggedItem && draggedItem.parentNode === timelineContainer && draggedItem.classList.contains('tappable')) {
+                finalizeItemPlacement(draggedItem);
+              }
+            }, 50);
           }
         }
       }
@@ -1276,36 +875,45 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }, 50);
     
-    // Set a timer to re-enable tap to place after a cooldown period
-    // This prevents accidental taps right after dragging ends
-    if (dragCooldownTimer) {
-      clearTimeout(dragCooldownTimer);
-    }
-    
-    // Store reference to the dragged item for highlighting after cooldown
-    const draggedItemRef = draggedItem;
-    
-    // Shorter cooldown for better responsiveness on mobile
-    dragCooldownTimer = setTimeout(() => {
-      recentlyDragged = false;
-      dragCooldownTimer = null;
-      
-      // Add visual hint that the item is now tappable
-      if (draggedItemRef && 
-          draggedItemRef.parentNode === timelineContainer && 
-          !draggedItemRef.classList.contains('placed')) {
-        // Flash the tap button to draw attention
-        const tapButton = draggedItemRef.querySelector('.tap-button');
-        if (tapButton) {
-          tapButton.classList.add('tap-highlight');
-          setTimeout(() => {
-            if (tapButton.parentNode) {
-              tapButton.classList.remove('tap-highlight');
-            }
-          }, 600);
-        }
+    // If this wasn't a tap, set the cooldown timer
+    if (!wasTap) {
+      // Set a timer to re-enable tap to place after a cooldown period
+      if (dragCooldownTimer) {
+        clearTimeout(dragCooldownTimer);
       }
-    }, 300); // Reduced cooldown from 500ms to 300ms for better responsiveness
+      
+      // Store reference to the dragged item for highlighting after cooldown
+      const draggedItemRef = draggedItem;
+      
+      // Shorter cooldown for better responsiveness on mobile
+      dragCooldownTimer = setTimeout(() => {
+        recentlyDragged = false;
+        dragCooldownTimer = null;
+        
+        // Add visual hint that the item is now tappable
+        if (draggedItemRef && 
+            draggedItemRef.parentNode === timelineContainer && 
+            !draggedItemRef.classList.contains('placed')) {
+          // Flash the tap button to draw attention
+          const tapButton = draggedItemRef.querySelector('.tap-button');
+          if (tapButton) {
+            tapButton.classList.add('tap-highlight');
+            setTimeout(() => {
+              if (tapButton.parentNode) {
+                tapButton.classList.remove('tap-highlight');
+              }
+            }, 600);
+          }
+        }
+      }, 300); // Reduced cooldown from 500ms to 300ms for better responsiveness
+    } else {
+      // If it was a tap, we don't need the cooldown
+      recentlyDragged = false;
+      if (dragCooldownTimer) {
+        clearTimeout(dragCooldownTimer);
+        dragCooldownTimer = null;
+      }
+    }
     
     draggedElement = null;
     isDraggingActive = false;
