@@ -143,6 +143,10 @@ document.addEventListener('DOMContentLoaded', () => {
   let isDraggingActive = false; // Track if we're currently dragging
   let stackedEvents = []; // Track stacked events in source
   
+  // Add a flag to prevent immediate tap after drag on mobile
+  let recentlyDragged = false;
+  let dragCooldownTimer = null;
+  
   // Firebase Statistics Tracking Functions
   
   // Check if Firebase is loaded and available
@@ -552,6 +556,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const handlePlacement = (e) => {
       e.preventDefault();
       e.stopPropagation(); // Prevent event bubbling
+      
+      // Skip if we recently finished dragging (prevents accidental taps on mobile)
+      if (recentlyDragged) {
+        return;
+      }
       
       // Only process if the item is in the timeline and has the tappable class
       if (item.classList.contains('tappable')) {
@@ -1010,6 +1019,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Only handle touch events if this isn't a placed item
     if (this.classList.contains('placed')) return;
     
+    // Set recently dragged flag to true
+    recentlyDragged = true;
+    
+    // Clear any existing cooldown timer
+    if (dragCooldownTimer) {
+      clearTimeout(dragCooldownTimer);
+      dragCooldownTimer = null;
+    }
+    
     const touch = e.touches[0];
     touchY = touch.clientY;
     
@@ -1211,6 +1229,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     }, 50);
+    
+    // Set a timer to re-enable tap to place after a cooldown period
+    // This prevents accidental taps right after dragging ends
+    if (dragCooldownTimer) {
+      clearTimeout(dragCooldownTimer);
+    }
+    
+    dragCooldownTimer = setTimeout(() => {
+      recentlyDragged = false;
+      dragCooldownTimer = null;
+    }, 500); // 500ms cooldown before taps are registered again
     
     draggedElement = null;
     isDraggingActive = false;
@@ -1526,6 +1555,7 @@ document.addEventListener('DOMContentLoaded', () => {
     draggedElement = null;
     isDraggingActive = false;
     stackedEvents = [];
+    recentlyDragged = false; // Reset drag cooldown flag
     
     // Make sure timeline is at default height
     timelineContainer.classList.remove('expanded-timeline');
