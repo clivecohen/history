@@ -422,6 +422,12 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           timelineContainer.insertBefore(draggable, afterElement);
         }
+        
+        // Ensure the timeline-item class is maintained during reordering
+        if (!draggable.classList.contains('timeline-item') && !draggable.classList.contains('placed')) {
+          draggable.classList.add('timeline-item');
+          addTapToPlaceButton(draggable);
+        }
       }
     });
     
@@ -1118,6 +1124,18 @@ document.addEventListener('DOMContentLoaded', () => {
           timelineContainer.insertBefore(draggedElement, afterElement);
         } else if (!afterElement) {
           timelineContainer.appendChild(draggedElement);
+        }
+        
+        // Maintain the timeline-item class and ensure tap to place button exists
+        if (!draggedElement.classList.contains('placed')) {
+          if (!draggedElement.classList.contains('timeline-item')) {
+            draggedElement.classList.add('timeline-item');
+          }
+          
+          // Make sure the tap button exists
+          if (!draggedElement.querySelector('.tap-button')) {
+            addTapToPlaceButton(draggedElement);
+          }
         }
       }
     } else {
