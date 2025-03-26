@@ -552,32 +552,75 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add to item
     item.appendChild(tapButton);
     
-    // Handler function for both click and touch events
-    const handlePlacement = (e) => {
-      e.preventDefault();
-      e.stopPropagation(); // Prevent event bubbling
-      
-      // Skip if we recently finished dragging (prevents accidental taps on mobile)
-      if (recentlyDragged) {
-        return;
-      }
-      
-      // Only process if the item is in the timeline and has the tappable class
-      if (item.classList.contains('tappable')) {
-        // Add visual feedback
-        item.style.transform = 'scale(0.98)';
-        
-        // Small delay for visual feedback
-        setTimeout(() => {
-          item.style.transform = '';
-          finalizeItemPlacement(item);
-        }, 100);
-      }
-    };
+    // Remove any existing event listeners to prevent duplicates
+    item.removeEventListener('click', handleItemPlacement);
+    item.removeEventListener('touchend', handleItemTouchEnd);
     
     // Add both click and touchend events for better cross-platform support
-    item.addEventListener('click', handlePlacement);
-    item.addEventListener('touchend', handlePlacement);
+    item.addEventListener('click', handleItemPlacement);
+    item.addEventListener('touchend', handleItemTouchEnd);
+  }
+  
+  // Separate handler for click events
+  function handleItemPlacement(e) {
+    e.preventDefault();
+    e.stopPropagation(); // Prevent event bubbling
+    
+    // Skip if we recently finished dragging (prevents accidental taps)
+    if (recentlyDragged) {
+      debugLog("Ignoring click - recent drag detected");
+      return;
+    }
+    
+    // Only process if the item is in the timeline and has the tappable class
+    if (this.classList.contains('tappable')) {
+      // Add visual feedback
+      this.style.transform = 'scale(0.98)';
+      
+      // Small delay for visual feedback
+      setTimeout(() => {
+        this.style.transform = '';
+        finalizeItemPlacement(this);
+      }, 100);
+    }
+  }
+  
+  // Separate handler for touch events
+  function handleItemTouchEnd(e) {
+    // Only handle touch events that are intended as taps, not drags
+    if (isDraggingActive) {
+      debugLog("Touch end ignored - active drag in progress");
+      return;
+    }
+    
+    // Only handle if not recently dragged
+    if (recentlyDragged) {
+      debugLog("Touch end ignored - recent drag detected");
+      return;
+    }
+    
+    // Get the touch that ended
+    const touch = e.changedTouches ? e.changedTouches[0] : null;
+    if (!touch) return;
+    
+    // Check if the touch is within this element
+    const rect = this.getBoundingClientRect();
+    if (
+      touch.clientX >= rect.left && touch.clientX <= rect.right &&
+      touch.clientY >= rect.top && touch.clientY <= rect.bottom
+    ) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // Add visual feedback
+      this.style.transform = 'scale(0.98)';
+      
+      // Process the placement with a small delay for better visual feedback
+      setTimeout(() => {
+        this.style.transform = '';
+        finalizeItemPlacement(this);
+      }, 100);
+    }
   }
 
   // Handle finalizing the placement of an item
@@ -1127,6 +1170,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const touch = e.changedTouches ? e.changedTouches[0] : null;
     const currentY = touch ? touch.clientY : 0;
     
+    // Store the dragged element in a variable to use later
+    const draggedItem = draggedElement;
+    
     // Reset positioning to prepare for insertion
     draggedElement.style.position = '';
     draggedElement.style.left = '';
@@ -1236,10 +1282,30 @@ document.addEventListener('DOMContentLoaded', () => {
       clearTimeout(dragCooldownTimer);
     }
     
+    // Store reference to the dragged item for highlighting after cooldown
+    const draggedItemRef = draggedItem;
+    
+    // Shorter cooldown for better responsiveness on mobile
     dragCooldownTimer = setTimeout(() => {
       recentlyDragged = false;
       dragCooldownTimer = null;
-    }, 500); // 500ms cooldown before taps are registered again
+      
+      // Add visual hint that the item is now tappable
+      if (draggedItemRef && 
+          draggedItemRef.parentNode === timelineContainer && 
+          !draggedItemRef.classList.contains('placed')) {
+        // Flash the tap button to draw attention
+        const tapButton = draggedItemRef.querySelector('.tap-button');
+        if (tapButton) {
+          tapButton.classList.add('tap-highlight');
+          setTimeout(() => {
+            if (tapButton.parentNode) {
+              tapButton.classList.remove('tap-highlight');
+            }
+          }, 600);
+        }
+      }
+    }, 300); // Reduced cooldown from 500ms to 300ms for better responsiveness
     
     draggedElement = null;
     isDraggingActive = false;
