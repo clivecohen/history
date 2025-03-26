@@ -1645,6 +1645,56 @@ document.addEventListener('DOMContentLoaded', () => {
     // Track game start for statistics
     trackGameStart();
     
+    // Define updateScore function if it doesn't exist
+    if (typeof updateScore !== 'function') {
+      // Update score display
+      window.updateScore = function() {
+        scoreDisplay.textContent = score;
+        
+        // Add glowing effect when score increases
+        scoreDisplay.classList.add('score-glow');
+        
+        // Remove the glow effect after animation completes
+        setTimeout(() => {
+          scoreDisplay.classList.remove('score-glow');
+        }, 1000);
+      };
+    }
+    
+    // Define updateScoringExplanation function if it doesn't exist
+    if (typeof updateScoringExplanation !== 'function') {
+      // Update the scoring explanation based on current correct answer count
+      window.updateScoringExplanation = function() {
+        const scoringExplanation = document.getElementById('scoring-explanation');
+        if (!scoringExplanation) return;
+        
+        let pointsWorth = 0;
+        
+        // Calculate what the NEXT correct answer will be worth
+        // This matches the simplified scoring system
+        switch(correctAnswerCount) {
+          case 0:
+            pointsWorth = 50; // First answer
+            break;
+          case 1:
+            pointsWorth = 100; // Second answer
+            break;
+          case 2:
+            pointsWorth = 200; // Third answer
+            break;
+          case 3:
+            pointsWorth = 300; // Fourth answer
+            break;
+          case 4:
+          default:
+            pointsWorth = 400; // Fifth answer and beyond
+            break;
+        }
+        
+        scoringExplanation.textContent = `Correct answer is worth ${pointsWorth} points`;
+      };
+    }
+    
     // Shuffle the historical events to randomize the order
     shuffleArray(historicalEvents);
     
