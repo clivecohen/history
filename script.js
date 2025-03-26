@@ -510,6 +510,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Add TAP TO PLACE button to a timeline item
   function addTapToPlaceButton(item) {
+    // If the item already has a tap button, don't add another one
+    if (item.querySelector('.tap-button')) {
+      return;
+    }
+    
     // Make the entire item clickable
     item.classList.add('tappable');
     
@@ -1161,6 +1166,20 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Reset animations
     resetItemsAnimation();
+    
+    // Important: Manually check all items in timeline to ensure they have needed classes
+    // This is critical for mobile since touch events can behave differently
+    setTimeout(() => {
+      const timelineItems = timelineContainer.querySelectorAll('.item:not(.placed)');
+      timelineItems.forEach(item => {
+        if (!item.classList.contains('placed')) {
+          item.classList.add('timeline-item');
+          if (!item.querySelector('.tap-button')) {
+            addTapToPlaceButton(item);
+          }
+        }
+      });
+    }, 50);
     
     draggedElement = null;
     isDraggingActive = false;
