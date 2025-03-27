@@ -91,45 +91,45 @@ document.addEventListener('DOMContentLoaded', () => {
   // Historical events game data
   const historicalEvents = [
     {
-      year: 1930,
-      event: "Introduction of the starting gate in horse racing",
-      fullText: "<b>1930s</b>, Introduction of the starting gate in horse racing",
+      year: 9128004,
+      event: "JAMES A MACDONALD",
+      fullText: "<b>JAMES A MACDONALD</b> - $9,128,004",
       color: "#FF5252" // Bright red
     },
     {
-      year: 1946,
-      event: "First mobile starting gate was introduced",
-      fullText: "<b>1946</b>, First mobile starting gate was introduced",
+      year: 7219222,
+      event: "LOUIS-PHILIPPE ROY",
+      fullText: "<b>LOUIS-PHILIPPE ROY</b> - $7,219,222",
       color: "#448AFF" // Bright blue
     },
     {
-      year: 1993,
-      event: "First sub-1:50 mile in the United States (Staying Together)",
-      fullText: "<b>1993</b>, First sub-1:50 mile in the United States (Staying Together)",
+      year: 6125857,
+      event: "DOUGLAS R MCNAIR",
+      fullText: "<b>DOUGLAS R MCNAIR</b> - $6,125,857",
       color: "#FF9800" // Bright orange
     },
     {
-      year: 1995,
-      event: "First sub-1:50 mile in Canada (Ball And Chain)",
-      fullText: "<b>1995</b>, First sub-1:50 mile in Canada (Ball And Chain)",
+      year: 4665097,
+      event: "SYLVAIN R FILION",
+      fullText: "<b>SYLVAIN R FILION</b> - $4,665,097",
       color: "#4CAF50" // Bright green
     },
     {
-      year: 2004,
-      event: "North America Cup is contested for a record breaking $1,629,500 purse",
-      fullText: "<b>2004</b>, North America Cup is contested for a record breaking $1,629,500 purse",
+      year: 4610239,
+      event: "BOB MCCLURE",
+      fullText: "<b>BOB MCCLURE</b> - $4,610,239",
       color: "#9C27B0" // Bright purple
     },
     {
-      year: 2022,
-      event: "First sub-1:46 mile by a pacer (Bulldog Hanover)",
-      fullText: "<b>2022</b>, First sub-1:46 mile by a pacer (Bulldog Hanover)",
+      year: 4374733,
+      event: "TYLER J BORTH",
+      fullText: "<b>TYLER J BORTH</b> - $4,374,733",
       color: "#00BCD4" // Bright cyan
     }
   ];
   
-  // Sort events by year
-  const sortedEvents = [...historicalEvents].sort((a, b) => a.year - b.year);
+  // Sort events by year (descending order for earnings)
+  const sortedEvents = [...historicalEvents].sort((a, b) => b.year - a.year);
   
   // Score and game state
   let score = 0;
@@ -644,16 +644,16 @@ document.addEventListener('DOMContentLoaded', () => {
       if (placedIndex === 0) {
         // If it's at the beginning, check if it's before the next item
         const nextItemYear = parseInt(timelineItems[1].dataset.year);
-        isCorrect = yearToCheck < nextItemYear;
+        isCorrect = yearToCheck > nextItemYear;
       } else if (placedIndex === timelineItems.length - 1) {
         // If it's at the end, check if it's after the previous item
         const prevItemYear = parseInt(timelineItems[placedIndex - 1].dataset.year);
-        isCorrect = yearToCheck > prevItemYear;
+        isCorrect = yearToCheck < prevItemYear;
       } else {
         // If it's in the middle, check both sides
         const prevItemYear = parseInt(timelineItems[placedIndex - 1].dataset.year);
         const nextItemYear = parseInt(timelineItems[placedIndex + 1].dataset.year);
-        isCorrect = yearToCheck > prevItemYear && yearToCheck < nextItemYear;
+        isCorrect = yearToCheck < prevItemYear && yearToCheck > nextItemYear;
       }
     }
     
@@ -1046,14 +1046,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Sort items by year, excluding the item we're moving
     const sortedItems = [...timelineItems].filter(i => i !== item)
-      .sort((a, b) => parseInt(a.dataset.year) - parseInt(b.dataset.year));
+      .sort((a, b) => parseInt(b.dataset.year) - parseInt(a.dataset.year));
     
     // Find the correct position for this item based on its year
     let targetPosition = null;
     let insertAfterElement = null;
     
     for (let i = 0; i < sortedItems.length; i++) {
-      if (parseInt(sortedItems[i].dataset.year) > yearToCheck) {
+      if (parseInt(sortedItems[i].dataset.year) < yearToCheck) {
         // This will be the insertion point - place before this item
         targetPosition = sortedItems[i];
         break;
@@ -1536,7 +1536,7 @@ document.addEventListener('DOMContentLoaded', () => {
       scoreContainer.style.display = 'none';
     }
     
-    // Clear the source container (Event Stack)
+    // Clear the source container (Driver Stack)
     sourceContainer.innerHTML = '';
     
     // Hide or remove the area labels
