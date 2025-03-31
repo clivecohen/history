@@ -91,39 +91,39 @@ document.addEventListener('DOMContentLoaded', () => {
   // Historical events game data
   const historicalEvents = [
     {
-      year: 9128004,
-      event: "JAMES A MACDONALD",
-      fullText: "<b>JAMES A MACDONALD</b> - $9,128,004",
+      year: 16626453,
+      event: "DEXTER DUNN",
+      fullText: "<b>DEXTER DUNN</b> - $16,626,453",
       color: "#FF5252" // Bright red
     },
     {
-      year: 7219222,
-      event: "LOUIS-PHILIPPE ROY",
-      fullText: "<b>LOUIS-PHILIPPE ROY</b> - $7,219,222",
+      year: 14587018,
+      event: "YANNICK GINGRAS",
+      fullText: "<b>YANNICK GINGRAS</b> - $14,587,018",
       color: "#448AFF" // Bright blue
     },
     {
-      year: 6125857,
-      event: "DOUGLAS R MCNAIR",
-      fullText: "<b>DOUGLAS R MCNAIR</b> - $6,125,857",
+      year: 12633363,
+      event: "JASON BARTLETT",
+      fullText: "<b>JASON BARTLETT</b> - $12,633,363",
       color: "#FF9800" // Bright orange
     },
     {
-      year: 4665097,
-      event: "SYLVAIN R FILION",
-      fullText: "<b>SYLVAIN R FILION</b> - $4,665,097",
+      year: 10010639,
+      event: "DAVID MILLER",
+      fullText: "<b>DAVID MILLER</b> - $10,010,639",
       color: "#4CAF50" // Bright green
     },
     {
-      year: 4610239,
-      event: "BOB MCCLURE",
-      fullText: "<b>BOB MCCLURE</b> - $4,610,239",
+      year: 9898483,
+      event: "MATT KAKALEY",
+      fullText: "<b>MATT KAKALEY</b> - $9,898,483",
       color: "#9C27B0" // Bright purple
     },
     {
-      year: 4374733,
-      event: "TYLER J BORTH",
-      fullText: "<b>TYLER J BORTH</b> - $4,374,733",
+      year: 9880074,
+      event: "SCOTT ZERON",
+      fullText: "<b>SCOTT ZERON</b> - $9,880,074",
       color: "#00BCD4" // Bright cyan
     }
   ];
