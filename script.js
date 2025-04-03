@@ -91,45 +91,45 @@ document.addEventListener('DOMContentLoaded', () => {
   // Historical events game data
   const historicalEvents = [
     {
-      year: 16626453,
-      event: "DEXTER DUNN",
-      fullText: "<b>DEXTER DUNN</b> - $16,626,453",
+      year: 1849,
+      event: "Hambletonian 10 (also known as Rysdyk's Hambletonian) is foaled",
+      fullText: "<b>1849</b>, Hambletonian 10 (also known as Rysdyk's Hambletonian) is foaled",
       color: "#FF5252" // Bright red
     },
     {
-      year: 14587018,
-      event: "YANNICK GINGRAS",
-      fullText: "<b>YANNICK GINGRAS</b> - $14,587,018",
+      year: 1879,
+      event: "The term 'Standardbred' is first officially used",
+      fullText: "<b>1879</b>, The term 'Standardbred' is first officially used",
       color: "#448AFF" // Bright blue
     },
     {
-      year: 12633363,
-      event: "JASON BARTLETT",
-      fullText: "<b>JASON BARTLETT</b> - $12,633,363",
+      year: 1939,
+      event: "The United States Trotting Association (USTA) is established",
+      fullText: "<b>1939</b>, The United States Trotting Association (USTA) is established",
       color: "#FF9800" // Bright orange
     },
     {
-      year: 10010639,
-      event: "DAVID MILLER",
-      fullText: "<b>DAVID MILLER</b> - $10,010,639",
+      year: 1946,
+      event: "The first Little Brown Jug is contested at the Delaware County Fairgrounds",
+      fullText: "<b>1946</b>, The first Little Brown Jug is contested at the Delaware County Fairgrounds",
       color: "#4CAF50" // Bright green
     },
     {
-      year: 9898483,
-      event: "MATT KAKALEY",
-      fullText: "<b>MATT KAKALEY</b> - $9,898,483",
+      year: 1952,
+      event: "The first Elitloppet is contested at Solvalla Racetrack",
+      fullText: "<b>1952</b>, The first Elitloppet is contested at Solvalla Racetrack",
       color: "#9C27B0" // Bright purple
     },
     {
-      year: 9880074,
-      event: "SCOTT ZERON",
-      fullText: "<b>SCOTT ZERON</b> - $9,880,074",
+      year: 1984,
+      event: "The inaugural North America Cup is raced",
+      fullText: "<b>1984</b>, The inaugural North America Cup is raced",
       color: "#00BCD4" // Bright cyan
     }
   ];
   
-  // Sort events by year (descending order for earnings)
-  const sortedEvents = [...historicalEvents].sort((a, b) => b.year - a.year);
+  // Sort events by year (chronological order)
+  const sortedEvents = [...historicalEvents].sort((a, b) => a.year - b.year);
   
   // Score and game state
   let score = 0;
@@ -644,16 +644,16 @@ document.addEventListener('DOMContentLoaded', () => {
       if (placedIndex === 0) {
         // If it's at the beginning, check if it's before the next item
         const nextItemYear = parseInt(timelineItems[1].dataset.year);
-        isCorrect = yearToCheck > nextItemYear;
+        isCorrect = yearToCheck < nextItemYear;
       } else if (placedIndex === timelineItems.length - 1) {
         // If it's at the end, check if it's after the previous item
         const prevItemYear = parseInt(timelineItems[placedIndex - 1].dataset.year);
-        isCorrect = yearToCheck < prevItemYear;
+        isCorrect = yearToCheck > prevItemYear;
       } else {
         // If it's in the middle, check both sides
         const prevItemYear = parseInt(timelineItems[placedIndex - 1].dataset.year);
         const nextItemYear = parseInt(timelineItems[placedIndex + 1].dataset.year);
-        isCorrect = yearToCheck < prevItemYear && yearToCheck > nextItemYear;
+        isCorrect = yearToCheck > prevItemYear && yearToCheck < nextItemYear;
       }
     }
     
@@ -1046,14 +1046,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Sort items by year, excluding the item we're moving
     const sortedItems = [...timelineItems].filter(i => i !== item)
-      .sort((a, b) => parseInt(b.dataset.year) - parseInt(a.dataset.year));
+      .sort((a, b) => parseInt(a.dataset.year) - parseInt(b.dataset.year));
     
     // Find the correct position for this item based on its year
     let targetPosition = null;
     let insertAfterElement = null;
     
     for (let i = 0; i < sortedItems.length; i++) {
-      if (parseInt(sortedItems[i].dataset.year) < yearToCheck) {
+      if (parseInt(sortedItems[i].dataset.year) > yearToCheck) {
         // This will be the insertion point - place before this item
         targetPosition = sortedItems[i];
         break;
@@ -1536,7 +1536,7 @@ document.addEventListener('DOMContentLoaded', () => {
       scoreContainer.style.display = 'none';
     }
     
-    // Clear the source container (Driver Stack)
+    // Clear the source container (Event Stack)
     sourceContainer.innerHTML = '';
     
     // Hide or remove the area labels
