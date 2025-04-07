@@ -91,45 +91,45 @@ document.addEventListener('DOMContentLoaded', () => {
   // Historical events game data
   const historicalEvents = [
     {
-      year: 1849,
-      event: "Hambletonian 10 (also known as Rysdyk's Hambletonian) is foaled",
-      fullText: "<b>1849</b>, Hambletonian 10 (also known as Rysdyk's Hambletonian) is foaled",
+      year: 3316267,
+      event: "THIS IS THE PLAN",
+      fullText: "<b>THIS IS THE PLAN</b> - $3,316,267",
       color: "#FF5252" // Bright red
     },
     {
-      year: 1879,
-      event: "The term 'Standardbred' is first officially used",
-      fullText: "<b>1879</b>, The term 'Standardbred' is first officially used",
+      year: 3153541,
+      event: "CAPTAINTREACHEROUS",
+      fullText: "<b>CAPTAINTREACHEROUS</b> - $3,153,541",
       color: "#448AFF" // Bright blue
     },
     {
-      year: 1939,
-      event: "The United States Trotting Association (USTA) is established",
-      fullText: "<b>1939</b>, The United States Trotting Association (USTA) is established",
+      year: 2628213,
+      event: "PURE COUNTRY",
+      fullText: "<b>PURE COUNTRY</b> - $2,628,213",
       color: "#FF9800" // Bright orange
     },
     {
-      year: 1946,
-      event: "The first Little Brown Jug is contested at the Delaware County Fairgrounds",
-      fullText: "<b>1946</b>, The first Little Brown Jug is contested at the Delaware County Fairgrounds",
+      year: 2283068,
+      event: "DOWNBYTHESEASIDE",
+      fullText: "<b>DOWNBYTHESEASIDE</b> - $2,283,068",
       color: "#4CAF50" // Bright green
     },
     {
-      year: 1952,
-      event: "The first Elitloppet is contested at Solvalla Racetrack",
-      fullText: "<b>1952</b>, The first Elitloppet is contested at Solvalla Racetrack",
+      year: 2150858,
+      event: "DORSODURO HANOVER",
+      fullText: "<b>DORSODURO HANOVER</b> - $2,150,858",
       color: "#9C27B0" // Bright purple
     },
     {
-      year: 1984,
-      event: "The inaugural North America Cup is raced",
-      fullText: "<b>1984</b>, The inaugural North America Cup is raced",
+      year: 1946653,
+      event: "FILIBUSTER HANOVER",
+      fullText: "<b>FILIBUSTER HANOVER</b> - $1,946,653",
       color: "#00BCD4" // Bright cyan
     }
   ];
   
-  // Sort events by year (chronological order)
-  const sortedEvents = [...historicalEvents].sort((a, b) => a.year - b.year);
+  // Sort events by year (descending order for earnings)
+  const sortedEvents = [...historicalEvents].sort((a, b) => b.year - a.year);
   
   // Score and game state
   let score = 0;
@@ -644,16 +644,16 @@ document.addEventListener('DOMContentLoaded', () => {
       if (placedIndex === 0) {
         // If it's at the beginning, check if it's before the next item
         const nextItemYear = parseInt(timelineItems[1].dataset.year);
-        isCorrect = yearToCheck < nextItemYear;
+        isCorrect = yearToCheck > nextItemYear;
       } else if (placedIndex === timelineItems.length - 1) {
         // If it's at the end, check if it's after the previous item
         const prevItemYear = parseInt(timelineItems[placedIndex - 1].dataset.year);
-        isCorrect = yearToCheck > prevItemYear;
+        isCorrect = yearToCheck < prevItemYear;
       } else {
         // If it's in the middle, check both sides
         const prevItemYear = parseInt(timelineItems[placedIndex - 1].dataset.year);
         const nextItemYear = parseInt(timelineItems[placedIndex + 1].dataset.year);
-        isCorrect = yearToCheck > prevItemYear && yearToCheck < nextItemYear;
+        isCorrect = yearToCheck < prevItemYear && yearToCheck > nextItemYear;
       }
     }
     
@@ -1046,14 +1046,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Sort items by year, excluding the item we're moving
     const sortedItems = [...timelineItems].filter(i => i !== item)
-      .sort((a, b) => parseInt(a.dataset.year) - parseInt(b.dataset.year));
+      .sort((a, b) => parseInt(b.dataset.year) - parseInt(a.dataset.year));
     
     // Find the correct position for this item based on its year
     let targetPosition = null;
     let insertAfterElement = null;
     
     for (let i = 0; i < sortedItems.length; i++) {
-      if (parseInt(sortedItems[i].dataset.year) > yearToCheck) {
+      if (parseInt(sortedItems[i].dataset.year) < yearToCheck) {
         // This will be the insertion point - place before this item
         targetPosition = sortedItems[i];
         break;
@@ -1536,7 +1536,7 @@ document.addEventListener('DOMContentLoaded', () => {
       scoreContainer.style.display = 'none';
     }
     
-    // Clear the source container (Event Stack)
+    // Clear the source container (Driver Stack)
     sourceContainer.innerHTML = '';
     
     // Hide or remove the area labels
