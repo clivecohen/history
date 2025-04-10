@@ -25,6 +25,30 @@
       -webkit-overflow-scrolling: touch;
     }
   </style>
+  <script>
+    // Function to get today's date in YYYYMMDD format for cache busting
+    function getTodayVersion() {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      return `${year}${month}${day}`;
+    }
+    
+    // Update CSS and JS file versions
+    document.addEventListener('DOMContentLoaded', function() {
+      const version = getTodayVersion();
+      const cssLink = document.querySelector('link[href^="styles.css"]');
+      const scriptTag = document.querySelector('script[src^="script.js"]');
+      
+      if (cssLink) {
+        cssLink.href = `styles.css?v=${version}`;
+      }
+      if (scriptTag) {
+        scriptTag.src = `script.js?v=${version}`;
+      }
+    });
+  </script>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
