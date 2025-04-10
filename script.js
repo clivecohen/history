@@ -91,39 +91,39 @@ document.addEventListener('DOMContentLoaded', () => {
   // Historical events game data
   const historicalEvents = [
     {
-      year: 3316267,
-      event: "THIS IS THE PLAN",
-      fullText: "<b>THIS IS THE PLAN</b> - $3,316,267",
+      year: 299892141,
+      event: "JOHN CAMPBELL",
+      fullText: "<b>JOHN CAMPBELL</b> - $299,892,141",
       color: "#FF5252" // Bright red
     },
     {
-      year: 3153541,
-      event: "CAPTAINTREACHEROUS",
-      fullText: "<b>CAPTAINTREACHEROUS</b> - $3,153,541",
+      year: 292432671,
+      event: "DAVID MILLER",
+      fullText: "<b>DAVID MILLER</b> - $292,432,671",
       color: "#448AFF" // Bright blue
     },
     {
-      year: 2628213,
-      event: "PURE COUNTRY",
-      fullText: "<b>PURE COUNTRY</b> - $2,628,213",
+      year: 279605074,
+      event: "TIM TETRICK",
+      fullText: "<b>TIM TETRICK</b> - $279,605,074",
       color: "#FF9800" // Bright orange
     },
     {
-      year: 2283068,
-      event: "DOWNBYTHESEASIDE",
-      fullText: "<b>DOWNBYTHESEASIDE</b> - $2,283,068",
+      year: 246584674,
+      event: "YANNICK GINGRAS",
+      fullText: "<b>YANNICK GINGRAS</b> - $246,584,674",
       color: "#4CAF50" // Bright green
     },
     {
-      year: 2150858,
-      event: "DORSODURO HANOVER",
-      fullText: "<b>DORSODURO HANOVER</b> - $2,150,858",
+      year: 215343077,
+      event: "RON PIERCE",
+      fullText: "<b>RON PIERCE</b> - $215,343,077",
       color: "#9C27B0" // Bright purple
     },
     {
-      year: 1946653,
-      event: "FILIBUSTER HANOVER",
-      fullText: "<b>FILIBUSTER HANOVER</b> - $1,946,653",
+      year: 214181065,
+      event: "BRIAN SEARS",
+      fullText: "<b>BRIAN SEARS</b> - $214,181,065",
       color: "#00BCD4" // Bright cyan
     }
   ];
