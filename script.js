@@ -91,39 +91,39 @@ document.addEventListener('DOMContentLoaded', () => {
   // Historical events game data
   const historicalEvents = [
     {
-      year: 299892141,
-      event: "JOHN CAMPBELL",
-      fullText: "<b>JOHN CAMPBELL</b> - $299,892,141",
+      year: 152634374,
+      event: "JODY JAMIESON",
+      fullText: "<b>JODY JAMIESON</b> - $152,634,374",
       color: "#FF5252" // Bright red
     },
     {
-      year: 292432671,
-      event: "DAVID MILLER",
-      fullText: "<b>DAVID MILLER</b> - $292,432,671",
+      year: 144404646,
+      event: "SYLVAIN FILION",
+      fullText: "<b>SYLVAIN FILION</b> - $144,404,646",
       color: "#448AFF" // Bright blue
     },
     {
-      year: 279605074,
-      event: "TIM TETRICK",
-      fullText: "<b>TIM TETRICK</b> - $279,605,074",
+      year: 136988897,
+      event: "LUC OUELLETTE",
+      fullText: "<b>LUC OUELLETTE</b> - $136,988,897",
       color: "#FF9800" // Bright orange
     },
     {
-      year: 246584674,
-      event: "YANNICK GINGRAS",
-      fullText: "<b>YANNICK GINGRAS</b> - $246,584,674",
+      year: 133386532,
+      event: "JACK MOISEYEV",
+      fullText: "<b>JACK MOISEYEV</b> - $133,386,532",
       color: "#4CAF50" // Bright green
     },
     {
-      year: 215343077,
-      event: "RON PIERCE",
-      fullText: "<b>RON PIERCE</b> - $215,343,077",
+      year: 131979255,
+      event: "RANDALL WAPLES",
+      fullText: "<b>RANDALL WAPLES</b> - $131,979,255",
       color: "#9C27B0" // Bright purple
     },
     {
-      year: 214181065,
-      event: "BRIAN SEARS",
-      fullText: "<b>BRIAN SEARS</b> - $214,181,065",
+      year: 127745063,
+      event: "PAUL MACDONELL",
+      fullText: "<b>PAUL MACDONELL</b> - $127,745,063",
       color: "#00BCD4" // Bright cyan
     }
   ];
