@@ -91,39 +91,39 @@ document.addEventListener('DOMContentLoaded', () => {
   // Historical events game data
   const historicalEvents = [
     {
-      year: 152634374,
-      event: "JODY JAMIESON",
-      fullText: "<b>JODY JAMIESON</b> - $152,634,374",
+      year: 106070883,
+      event: "ROBERT MCINTOSH",
+      fullText: "<b>ROBERT MCINTOSH</b> - $106,070,883",
       color: "#FF5252" // Bright red
     },
     {
-      year: 144404646,
-      event: "SYLVAIN FILION",
-      fullText: "<b>SYLVAIN FILION</b> - $144,404,646",
+      year: 78409641,
+      event: "RICHARD MOREAU",
+      fullText: "<b>RICHARD MOREAU</b> - $78,409,641",
       color: "#448AFF" // Bright blue
     },
     {
-      year: 136988897,
-      event: "LUC OUELLETTE",
-      fullText: "<b>LUC OUELLETTE</b> - $136,988,897",
+      year: 62219684,
+      event: "GREGG MCNAIR",
+      fullText: "<b>GREGG MCNAIR</b> - $62,219,684",
       color: "#FF9800" // Bright orange
     },
     {
-      year: 133386532,
-      event: "JACK MOISEYEV",
-      fullText: "<b>JACK MOISEYEV</b> - $133,386,532",
+      year: 48911246,
+      event: "BEN BAILLARGEON",
+      fullText: "<b>BEN BAILLARGEON</b> - $48,911,246",
       color: "#4CAF50" // Bright green
     },
     {
-      year: 131979255,
-      event: "RANDALL WAPLES",
-      fullText: "<b>RANDALL WAPLES</b> - $131,979,255",
+      year: 48102948,
+      event: "BILL ROBINSON",
+      fullText: "<b>BILL ROBINSON</b> - $48,102,948",
       color: "#9C27B0" // Bright purple
     },
     {
-      year: 127745063,
-      event: "PAUL MACDONELL",
-      fullText: "<b>PAUL MACDONELL</b> - $127,745,063",
+      year: 39680489,
+      event: "BEN WALLACE",
+      fullText: "<b>BEN WALLACE</b> - $39,680,489",
       color: "#00BCD4" // Bright cyan
     }
   ];
@@ -261,16 +261,22 @@ document.addEventListener('DOMContentLoaded', () => {
       // Track completion by date
       firebase.database().ref(`stats/completions_by_date/${dateString}`).transaction(count => (count || 0) + 1);
       
-      // Track high score if it's higher than current
+      // Get user ID
       const userId = getUserId();
-      firebase.database().ref(`users/${userId}/high_score`).once('value', snapshot => {
-        const highScore = snapshot.val() || 0;
-        if (finalScore > highScore) {
-          firebase.database().ref(`users/${userId}/high_score`).set(finalScore);
-        }
+      
+      // Create timestamp for when the game was played
+      const timestamp = Date.now();
+      
+      // Update user data with timestamp, perfect score flag, and high score
+      firebase.database().ref(`users/${userId}`).update({
+        last_played: timestamp,
+        perfect_score: isPerfectScore,
+        high_score: finalScore,
+        games_completed: firebase.database.ServerValue.increment(1)
       });
       
       // Track completion by unique player
+      // This transaction is now redundant with the update above, but keeping for backward compatibility
       firebase.database().ref(`users/${userId}/games_completed`).transaction(count => (count || 0) + 1);
       
       // Get all users who have completed at least one game
@@ -288,7 +294,7 @@ document.addEventListener('DOMContentLoaded', () => {
         firebase.database().ref('stats/unique_completions').set(uniqueCompletions);
       });
       
-      debugLog(`Game completion tracked: score=${finalScore}, perfect=${isPerfectScore}, date=${dateString}`);
+      debugLog(`Game completion tracked: score=${finalScore}, perfect=${isPerfectScore}, date=${dateString}, timestamp=${timestamp}`);
     } catch (error) {
       console.error("Error tracking game completion:", error);
       // Continue without tracking
