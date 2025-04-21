@@ -90,12 +90,42 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Historical events game data
   const historicalEvents = [
-    { year: 2024, event: "BUNNY LAKE", earnings: 3068733, color: "#FF0000" },
-    { year: 2024, event: "BAHAMA BUNNY", earnings: 578338, color: "#00FF00" },
-    { year: 2024, event: "DAUNTLESS BUNNY", earnings: 506027, color: "#0000FF" },
-    { year: 2024, event: "EXPLOSIVE BUNNY", earnings: 355720, color: "#FFFF00" },
-    { year: 2024, event: "MIASBUNNY", earnings: 349500, color: "#FF00FF" },
-    { year: 2024, event: "BE THE BUNNY", earnings: 314026, color: "#00FFFF" }
+    {
+      year: 3068733,
+      event: "BUNNY LAKE (47 WINS)",
+      fullText: "<b>BUNNY LAKE (47 WINS) </b> - $3,068,733",
+      color: "#FF5252" // Bright red
+    },
+    {
+      year: 578338,
+      event: "BAHAMA BUNNY (37 WINS)",
+      fullText: "<b>BAHAMA BUNNY (37 WINS) </b> - $578,338",
+      color: "#448AFF" // Bright blue
+    },
+    {
+      year: 506027,
+      event: "DAUNTLESS BUNNY (28 WINS)",
+      fullText: "<b>DAUNTLESS BUNNY (28 WINS) </b> - $506,027",
+      color: "#FF9800" // Bright orange
+    },
+    {
+      year: 355720,
+      event: "EXPLOSIVE BUNNY (48 WINS)",
+      fullText: "<b>EXPLOSIVE BUNNY (48 WINS) </b> - $355,720",
+      color: "#4CAF50" // Bright green
+    },
+    {
+      year: 349500,
+      event: "MIASBUNNY (18 WINS)",
+      fullText: "<b>MIASBUNNY (18 WINS) </b> - $349,500",
+      color: "#9C27B0" // Bright purple
+    },
+    {
+      year: 315026,
+      event: "BE THE BUNNY (29 WINS)",
+      fullText: "<b>BE THE BUNNY (29 WINS) </b> - $315,026",
+      color: "#00BCD4" // Bright cyan
+    }
   ];
   
   // Sort events by year (descending order for earnings)
