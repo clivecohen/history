@@ -90,42 +90,12 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Historical events game data
   const historicalEvents = [
-    {
-      year: 106070883,
-      event: "ROBERT MCINTOSH",
-      fullText: "<b>ROBERT MCINTOSH</b> - $106,070,883",
-      color: "#FF5252" // Bright red
-    },
-    {
-      year: 78409641,
-      event: "RICHARD MOREAU",
-      fullText: "<b>RICHARD MOREAU</b> - $78,409,641",
-      color: "#448AFF" // Bright blue
-    },
-    {
-      year: 62219684,
-      event: "GREGG MCNAIR",
-      fullText: "<b>GREGG MCNAIR</b> - $62,219,684",
-      color: "#FF9800" // Bright orange
-    },
-    {
-      year: 48911246,
-      event: "BEN BAILLARGEON",
-      fullText: "<b>BEN BAILLARGEON</b> - $48,911,246",
-      color: "#4CAF50" // Bright green
-    },
-    {
-      year: 48102948,
-      event: "BILL ROBINSON",
-      fullText: "<b>BILL ROBINSON</b> - $48,102,948",
-      color: "#9C27B0" // Bright purple
-    },
-    {
-      year: 39680489,
-      event: "BEN WALLACE",
-      fullText: "<b>BEN WALLACE</b> - $39,680,489",
-      color: "#00BCD4" // Bright cyan
-    }
+    { year: 2024, event: "BUNNY LAKE", earnings: 3068733, color: "#FF0000" },
+    { year: 2024, event: "BAHAMA BUNNY", earnings: 578338, color: "#00FF00" },
+    { year: 2024, event: "DAUNTLESS BUNNY", earnings: 506027, color: "#0000FF" },
+    { year: 2024, event: "EXPLOSIVE BUNNY", earnings: 355720, color: "#FFFF00" },
+    { year: 2024, event: "MIASBUNNY", earnings: 349500, color: "#FF00FF" },
+    { year: 2024, event: "BE THE BUNNY", earnings: 314026, color: "#00FFFF" }
   ];
   
   // Sort events by year (descending order for earnings)
