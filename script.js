@@ -91,39 +91,39 @@ document.addEventListener('DOMContentLoaded', () => {
   // Historical events game data
   const historicalEvents = [
     {
-      year: 3068733,
-      event: "BUNNY LAKE (47 WINS)",
-      fullText: "<b>BUNNY LAKE (47 WINS) </b> - $3,068,733",
+      year: 2447194,
+      event: "ABUCKABETT HANOVER",
+      fullText: "<b>ABUCKABETT HANOVER</b> - $2,447,194",
       color: "#FF5252" // Bright red
     },
     {
-      year: 578338,
-      event: "BAHAMA BUNNY (37 WINS)",
-      fullText: "<b>BAHAMA BUNNY (37 WINS) </b> - $578,338",
+      year: 806432,
+      event: "LINEDRIVE HANOVER",
+      fullText: "<b>LINEDRIVE HANOVER</b> - $806,432",
       color: "#448AFF" // Bright blue
     },
     {
-      year: 506027,
-      event: "DAUNTLESS BUNNY (28 WINS)",
-      fullText: "<b>DAUNTLESS BUNNY (28 WINS) </b> - $506,027",
+      year: 561311,
+      event: "NIGHT HAWK",
+      fullText: "<b>NIGHT HAWK</b> - $651,311",
       color: "#FF9800" // Bright orange
     },
     {
-      year: 355720,
-      event: "EXPLOSIVE BUNNY (48 WINS)",
-      fullText: "<b>EXPLOSIVE BUNNY (48 WINS) </b> - $355,720",
+      year: 527001,
+      event: "DEAN B HANOVER",
+      fullText: "<b>DEAN B HANOVER</b> - $527,001",
       color: "#4CAF50" // Bright green
     },
     {
-      year: 349500,
-      event: "MIASBUNNY (18 WINS)",
-      fullText: "<b>MIASBUNNY (18 WINS) </b> - $349,500",
+      year: 485392,
+      event: "IMAGINARY LINE",
+      fullText: "<b>IMAGINARY LINE</b> - $485,392",
       color: "#9C27B0" // Bright purple
     },
     {
-      year: 315026,
-      event: "BE THE BUNNY (29 WINS)",
-      fullText: "<b>BE THE BUNNY (29 WINS) </b> - $315,026",
+      year: 435711,
+      event: "MILIEU HANOVER",
+      fullText: "<b>MILIEU HANOVER</b> - $435,711",
       color: "#00BCD4" // Bright cyan
     }
   ];
