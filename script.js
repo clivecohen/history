@@ -91,45 +91,45 @@ document.addEventListener('DOMContentLoaded', () => {
   // Historical events game data
   const historicalEvents = [
     {
-      year: 2447194,
-      event: "ABUCKABETT HANOVER",
-      fullText: "<b>ABUCKABETT HANOVER</b> - $2,447,194",
+      year: 1926,
+      event: "Guy McKinney",
+      fullText: "<b>1926</b>, Guy McKinney",
       color: "#FF5252" // Bright red
     },
     {
-      year: 806432,
-      event: "LINEDRIVE HANOVER",
-      fullText: "<b>LINEDRIVE HANOVER</b> - $806,432",
+      year: 1936,
+      event: "Rosalind & and Greyhound Dead Heat",
+      fullText: "<b>1936</b>, Rosalind & and Greyhound Dead Heat",
       color: "#448AFF" // Bright blue
     },
     {
-      year: 561311,
-      event: "NIGHT HAWK",
-      fullText: "<b>NIGHT HAWK</b> - $651,311",
+      year: 1968,
+      event: "Nevele Pride’s dominance",
+      fullText: "<b>1968</b>, Nevele Pride’s dominance",
       color: "#FF9800" // Bright orange
     },
     {
-      year: 527001,
-      event: "DEAN B HANOVER",
-      fullText: "<b>DEAN B HANOVER</b> - $527,001",
+      year: 1996,
+      event: "Continentalvictory filly win",
+      fullText: "<b>1996</b>, Continentalvictory filly win",
       color: "#4CAF50" // Bright green
     },
     {
-      year: 485392,
-      event: "IMAGINARY LINE",
-      fullText: "<b>IMAGINARY LINE</b> - $485,392",
+      year: 2009,
+      event: "Muscle Hill’s masterclass",
+      fullText: "<b>2009</b>, Muscle Hill’s masterclass",
       color: "#9C27B0" // Bright purple
     },
     {
-      year: 435711,
-      event: "MILIEU HANOVER",
-      fullText: "<b>MILIEU HANOVER</b> - $435,711",
+      year: 2020,
+      event: "Ramona Hill beats boys",
+      fullText: "<b>2020</b>, Ramona Hill beats boys",
       color: "#00BCD4" // Bright cyan
     }
   ];
   
-  // Sort events by year (descending order for earnings)
-  const sortedEvents = [...historicalEvents].sort((a, b) => b.year - a.year);
+  // Sort events by year
+  const sortedEvents = [...historicalEvents].sort((a, b) => a.year - b.year);
   
   // Score and game state
   let score = 0;
@@ -261,22 +261,16 @@ document.addEventListener('DOMContentLoaded', () => {
       // Track completion by date
       firebase.database().ref(`stats/completions_by_date/${dateString}`).transaction(count => (count || 0) + 1);
       
-      // Get user ID
+      // Track high score if it's higher than current
       const userId = getUserId();
-      
-      // Create timestamp for when the game was played
-      const timestamp = Date.now();
-      
-      // Update user data with timestamp, perfect score flag, and high score
-      firebase.database().ref(`users/${userId}`).update({
-        last_played: timestamp,
-        perfect_score: isPerfectScore,
-        high_score: finalScore,
-        games_completed: firebase.database.ServerValue.increment(1)
+      firebase.database().ref(`users/${userId}/high_score`).once('value', snapshot => {
+        const highScore = snapshot.val() || 0;
+        if (finalScore > highScore) {
+          firebase.database().ref(`users/${userId}/high_score`).set(finalScore);
+        }
       });
       
       // Track completion by unique player
-      // This transaction is now redundant with the update above, but keeping for backward compatibility
       firebase.database().ref(`users/${userId}/games_completed`).transaction(count => (count || 0) + 1);
       
       // Get all users who have completed at least one game
@@ -294,7 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
         firebase.database().ref('stats/unique_completions').set(uniqueCompletions);
       });
       
-      debugLog(`Game completion tracked: score=${finalScore}, perfect=${isPerfectScore}, date=${dateString}, timestamp=${timestamp}`);
+      debugLog(`Game completion tracked: score=${finalScore}, perfect=${isPerfectScore}, date=${dateString}`);
     } catch (error) {
       console.error("Error tracking game completion:", error);
       // Continue without tracking
@@ -650,16 +644,16 @@ document.addEventListener('DOMContentLoaded', () => {
       if (placedIndex === 0) {
         // If it's at the beginning, check if it's before the next item
         const nextItemYear = parseInt(timelineItems[1].dataset.year);
-        isCorrect = yearToCheck > nextItemYear;
+        isCorrect = yearToCheck < nextItemYear;
       } else if (placedIndex === timelineItems.length - 1) {
         // If it's at the end, check if it's after the previous item
         const prevItemYear = parseInt(timelineItems[placedIndex - 1].dataset.year);
-        isCorrect = yearToCheck < prevItemYear;
+        isCorrect = yearToCheck > prevItemYear;
       } else {
         // If it's in the middle, check both sides
         const prevItemYear = parseInt(timelineItems[placedIndex - 1].dataset.year);
         const nextItemYear = parseInt(timelineItems[placedIndex + 1].dataset.year);
-        isCorrect = yearToCheck < prevItemYear && yearToCheck > nextItemYear;
+        isCorrect = yearToCheck > prevItemYear && yearToCheck < nextItemYear;
       }
     }
     
@@ -1052,14 +1046,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Sort items by year, excluding the item we're moving
     const sortedItems = [...timelineItems].filter(i => i !== item)
-      .sort((a, b) => parseInt(b.dataset.year) - parseInt(a.dataset.year));
+      .sort((a, b) => parseInt(a.dataset.year) - parseInt(b.dataset.year));
     
     // Find the correct position for this item based on its year
     let targetPosition = null;
     let insertAfterElement = null;
     
     for (let i = 0; i < sortedItems.length; i++) {
-      if (parseInt(sortedItems[i].dataset.year) < yearToCheck) {
+      if (parseInt(sortedItems[i].dataset.year) > yearToCheck) {
         // This will be the insertion point - place before this item
         targetPosition = sortedItems[i];
         break;
@@ -1542,7 +1536,7 @@ document.addEventListener('DOMContentLoaded', () => {
       scoreContainer.style.display = 'none';
     }
     
-    // Clear the source container (Driver Stack)
+    // Clear the source container (Event Stack)
     sourceContainer.innerHTML = '';
     
     // Hide or remove the area labels
