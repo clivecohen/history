@@ -2,32 +2,30 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="description"
-      content="Think you know Canadian harness racing trainers? Take our Standardbred Racing Quiz - Vol. 11 and test your knowledge of Betting Line foals!" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Standardbred Racing Quiz - Vol. 11</title>
-  
-  <!-- Open Graph / Facebook -->
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://racingquiz.ca" />
-  <meta property="og:title" content="Standardbred Racing Quiz - Vol. 11: Betting Line foals"/>
-  <meta property="og:description" content="Think you know Canadian harness racing trainers? Test your knowledge of Canadian trainers' all-time earnings in this interactive quiz!"/>
-  <meta property="og:image" content="https://www.racingquiz.com/og-image.png"/>
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  
-  <!-- Twitter -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:url" content="https://racingquiz.ca" />
-  <meta name="twitter:title" content="Standardbred Racing Quiz - Vol. 11: Betting Line foals" />
-  <meta name="twitter:description" content="Think you know Canadian harness racing trainers? Test your knowledge of Betting Line foals in this interactive quiz!" />
-  <meta name="twitter:image" content="https://www.racingquiz.com/og-image.png" />
-  
-  <!-- Additional SEO -->
-  <meta name="keywords" content="harness racing, standardbred, racing quiz, Standardbred Canada, horse racing, quiz game, usta harness racing, harness racing results, harness racing entries, daily racing form harness, harness horse racing results, harness racing results today, racing harness, usta trotting harness racing, standardbred harness racing" />
-  <meta name="author" content="Racing Quiz" />
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://racingquiz.ca" />
+  <title>Racing Quiz Game</title>
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://racingquiz.ca" />
+    <meta property="og:title" content="Standardbred Racing Quiz - Vol. 12: Hambletonian highlights"/>
+    <meta property="og:description" content="Think you know your Hambletonian highlights? Test your knowledge in this interactive quiz!"/>
+    <meta property="og:image" content="https://www.racingquiz.com/og-image.png"/>
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://racingquiz.ca" />
+    <meta name="twitter:title" content="Standardbred Racing Quiz - Vol. 12: Hambletonian highlights" />
+    <meta name="twitter:description" content="Think you know your Hambletonian highlights? Test your knowledge in this interactive quiz!" />
+    <meta name="twitter:image" content="https://www.racingquiz.com/og-image.png" />
+    
+    <!-- Additional SEO -->
+    <meta name="keywords" content="harness racing, standardbred, racing quiz, Standardbred Canada, horse racing, quiz game, usta harness racing, harness racing results, harness racing entries, daily racing form harness, harness horse racing results, harness racing results today, racing harness, usta trotting harness racing, standardbred harness racing" />
+    <meta name="author" content="Racing Quiz" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://racingquiz.ca" />
   <style>
     /* Prevent iOS bouncing/scrolling effects */
     html, body {
@@ -49,37 +47,13 @@
       -webkit-overflow-scrolling: touch;
     }
   </style>
-  <script>
-    // Function to get today's date in YYYYMMDD format for cache busting
-    function getTodayVersion() {
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, '0');
-      const day = String(today.getDate()).padStart(2, '0');
-      return `${year}${month}${day}`;
-    }
-    
-    // Update CSS and JS file versions
-    document.addEventListener('DOMContentLoaded', function() {
-      const version = getTodayVersion();
-      const cssLink = document.querySelector('link[href^="styles.css"]');
-      const scriptTag = document.querySelector('script[src^="script.js"]');
-      
-      if (cssLink) {
-        cssLink.href = `styles.css?v=${version}`;
-      }
-      if (scriptTag) {
-        scriptTag.src = `script.js?v=${version}`;
-      }
-    });
-  </script>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div id="intro-screen" class="intro-screen">
     <div class="intro-content">
-      <h1>Standardbred Racing Quiz - Vol. 11</h1>
-      <p>Organize the BETTING LINE Foals by earnings</p>
+      <h1>Racing Quiz - Vol. 12</h1>
+      <p>Drag events from the top stack and place them in chronological order below. Today's theme... HAMBLETONIAN HIGHLIGHTS!</p>
       <button id="continue-button">CONTINUE</button>
     </div>
   </div>
@@ -90,14 +64,14 @@
         <div class="score-box">Score: <span id="score">0</span></div>
       </div>
       <div id="game-container">
-        <div class="area-label">Driver Stack (<span id="stack-count">4</span> remaining):</div>
+        <div class="area-label">Event Stack (<span id="stack-count">4</span> remaining):</div>
         <div id="scoring-explanation" class="scoring-explanation">Correct answer is worth 25 points</div>
         <div id="source-container"></div>
-        <div class="area-label">Place in order below:</div>
+        <div class="area-label">Your Timeline:</div>
         <div class="timeline-wrapper">
-          <div class="timeline-label past">HIGHEST EARNING</div>
+          <div class="timeline-label past">PAST</div>
           <div id="timeline-container"></div>
-          <div class="timeline-label present">LOWEST EARNING</div>
+          <div class="timeline-label present">PRESENT</div>
         </div>
         <div id="result"></div>
         <div id="share-container" class="hidden">
