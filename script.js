@@ -91,39 +91,39 @@ document.addEventListener('DOMContentLoaded', () => {
   // Historical events game data
   const historicalEvents = [
     {
-      year: 1926,
-      event: "Guy McKinney",
-      fullText: "<b>1926</b>, Guy McKinney",
+      year: 1974,
+      event: "Delmonica Hanover wins Prix d'Amérique",
+      fullText: "<b>1974</b>, Delmonica Hanover wins Prix d'Amérique",
       color: "#FF5252" // Bright red
     },
     {
-      year: 1936,
-      event: "Rosalind & and Greyhound Dead Heat",
-      fullText: "<b>1936</b>, Rosalind & and Greyhound Dead Heat",
+      year: 1989,
+      event: "Peace Corps wins Elitloppet",
+      fullText: "<b>1989</b>, Peace Corps wins Elitloppet",
       color: "#448AFF" // Bright blue
     },
     {
-      year: 1968,
-      event: "Nevele Pride’s dominance",
-      fullText: "<b>1968</b>, Nevele Pride’s dominance",
+      year: 2001,
+      event: "Varenne wins Trotteur Français World Cup",
+      fullText: "<b>2001</b>, Varenne wins Trotteur Français World Cup",
       color: "#FF9800" // Bright orange
     },
     {
-      year: 1996,
-      event: "Continentalvictory filly win",
-      fullText: "<b>1996</b>, Continentalvictory filly win",
+      year: 1988,
+      event: "Mack Lobell wins Elitloppet",
+      fullText: "<b>1988</b>, Mack Lobell wins Elitloppet",
       color: "#4CAF50" // Bright green
     },
     {
-      year: 2009,
-      event: "Muscle Hill’s masterclass",
-      fullText: "<b>2009</b>, Muscle Hill’s masterclass",
+      year: 2017,
+      event: "Twister Bi wins Yonkers International Trot",
+      fullText: "<b>2017</b>, Twister Bi wins Yonkers International Trot",
       color: "#9C27B0" // Bright purple
     },
     {
-      year: 2020,
-      event: "Ramona Hill beats boys",
-      fullText: "<b>2020</b>, Ramona Hill beats boys",
+      year: 2019,
+      event: "Zacon Gio wins Yonkers International Trot",
+      fullText: "<b>2019</b>, Zacon Gio wins Yonkers International Trot",
       color: "#00BCD4" // Bright cyan
     }
   ];
