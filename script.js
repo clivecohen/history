@@ -91,39 +91,39 @@ document.addEventListener('DOMContentLoaded', () => {
   // Historical events game data
   const historicalEvents = [
     {
-      year: 1974,
-      event: "Delmonica Hanover wins Prix d'Amérique",
-      fullText: "<b>1974</b>, Delmonica Hanover wins Prix d'Amérique",
+      year: 1991,
+      event: "Precious Bunny",
+      fullText: "<b>1991</b>, Precious Bunny",
       color: "#FF5252" // Bright red
     },
     {
-      year: 1989,
-      event: "Peace Corps wins Elitloppet",
-      fullText: "<b>1989</b>, Peace Corps wins Elitloppet",
+      year: 1994,
+      event: "Cam's Card Shark",
+      fullText: "<b>1994</b>, Cam's Card Shark",
       color: "#448AFF" // Bright blue
     },
     {
-      year: 2001,
-      event: "Varenne wins Trotteur Français World Cup",
-      fullText: "<b>2001</b>, Varenne wins Trotteur Français World Cup",
+      year: 1995,
+      event: "David's Pass",
+      fullText: "<b>1995</b>, David's Pass",
       color: "#FF9800" // Bright orange
     },
     {
-      year: 1988,
-      event: "Mack Lobell wins Elitloppet",
-      fullText: "<b>1988</b>, Mack Lobell wins Elitloppet",
+      year: 1996,
+      event: "Arizona Jack",
+      fullText: "<b>1996</b>, Arizona Jack",
       color: "#4CAF50" // Bright green
     },
     {
-      year: 2017,
-      event: "Twister Bi wins Yonkers International Trot",
-      fullText: "<b>2017</b>, Twister Bi wins Yonkers International Trot",
+      year: 1997,
+      event: "Gothic Dream",
+      fullText: "<b>1997</b>, Gothic Dream",
       color: "#9C27B0" // Bright purple
     },
     {
-      year: 2019,
-      event: "Zacon Gio wins Yonkers International Trot",
-      fullText: "<b>2019</b>, Zacon Gio wins Yonkers International Trot",
+      year: 1999,
+      event: "The Panderosa",
+      fullText: "<b>1999</b>, The Panderosa",
       color: "#00BCD4" // Bright cyan
     }
   ];
