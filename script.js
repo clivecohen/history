@@ -91,39 +91,39 @@ document.addEventListener('DOMContentLoaded', () => {
   // Historical events game data
   const historicalEvents = [
     {
-      year: 1991,
-      event: "Precious Bunny",
-      fullText: "<b>1991</b>, Precious Bunny",
+      year: 2006,
+      event: "TOTAL TRUTH, RON PIERCE",
+      fullText: "<b>2006</b>, TOTAL TRUTH, RON PIERCE",
       color: "#FF5252" // Bright red
     },
     {
-      year: 1994,
-      event: "Cam's Card Shark",
-      fullText: "<b>1994</b>, Cam's Card Shark",
+      year: 2007,
+      event: "TELL ALL, JODY JAMIESON",
+      fullText: "<b>2007</b>, TELL ALL, JODY JAMIESON",
       color: "#448AFF" // Bright blue
     },
     {
-      year: 1995,
-      event: "David's Pass",
-      fullText: "<b>1995</b>, David's Pass",
+      year: 2009,
+      event: "WELL SAID, RON PIERCE",
+      fullText: "<b>2009</b>, WELL SAID, RON PIERCE",
       color: "#FF9800" // Bright orange
     },
     {
-      year: 1996,
-      event: "Arizona Jack",
-      fullText: "<b>1996</b>, Arizona Jack",
+      year: 2011,
+      event: "UP THE CREDIT, JODY JAMIESON",
+      fullText: "<b>2011</b>, UP THE CREDIT, JODY JAMIESON",
       color: "#4CAF50" // Bright green
     },
     {
-      year: 1997,
-      event: "Gothic Dream",
-      fullText: "<b>1997</b>, Gothic Dream",
+      year: 2016,
+      event: "BETTING LINE, DAVID MILLER",
+      fullText: "<b>2016</b>, BETTING LINE, DAVID MILLER",
       color: "#9C27B0" // Bright purple
     },
     {
-      year: 1999,
-      event: "The Panderosa",
-      fullText: "<b>1999</b>, The Panderosa",
+      year: 2017,
+      event: "FEAR THE DRAGON, DAVID MILLER",
+      fullText: "<b>2017</b>, FEAR THE DRAGON, DAVID MILLER",
       color: "#00BCD4" // Bright cyan
     }
   ];
