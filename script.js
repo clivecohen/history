@@ -1,4 +1,14 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', initializeGame);
+document.addEventListener('gameScriptReady', initializeGame);
+
+// Main initialization function
+function initializeGame() {
+  // Only initialize once
+  if (window.gameInitialized) return;
+  window.gameInitialized = true;
+  
+  console.log("Game initialization starting");
+  
   // Redefine debugLog to only log to console
   window.debugLog = function(message) {
     // Only log to console, not to the screen
@@ -476,21 +486,60 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Reveals the next event in the stack
   function revealNextInStack() {
+    console.log("Revealing next item in stack. Stack size: " + stackedEvents.length);
+    
     if (stackedEvents.length > 0) {
-      const nextEvent = stackedEvents.shift();
-      const topItemElement = document.createElement('div');
-      topItemElement.className = 'item top-of-stack';
-      topItemElement.textContent = nextEvent.event;
-      topItemElement.draggable = true;
-      topItemElement.dataset.year = nextEvent.year;
-      topItemElement.dataset.fullText = nextEvent.fullText;
-      topItemElement.dataset.color = nextEvent.color;
-      topItemElement.style.backgroundColor = nextEvent.color;
-      sourceContainer.appendChild(topItemElement);
-      
-      // Initialize drag for this new element
-      initDragForItem(topItemElement);
+      try {
+        const nextEvent = stackedEvents.shift();
+        console.log("Next event to reveal: " + nextEvent.event);
+        
+        const topItemElement = document.createElement('div');
+        topItemElement.className = 'item top-of-stack';
+        topItemElement.textContent = nextEvent.event;
+        topItemElement.draggable = true;
+        topItemElement.dataset.year = nextEvent.year;
+        topItemElement.dataset.fullText = nextEvent.fullText;
+        topItemElement.dataset.color = nextEvent.color;
+        topItemElement.style.backgroundColor = nextEvent.color;
+        
+        // Important: Force element visibility
+        topItemElement.style.display = 'block';
+        topItemElement.style.opacity = '1';
+        topItemElement.style.visibility = 'visible';
+        
+        // Add to source container
+        sourceContainer.appendChild(topItemElement);
+        console.log("Added new item to source container");
+        
+        // Force Chrome to repaint
+        void topItemElement.offsetWidth;
+        
+        // Initialize drag for this new element
+        initDragForItem(topItemElement);
+        
+        // Force another repaint to ensure styles are applied
+        setTimeout(() => {
+          if (topItemElement && topItemElement.parentNode) {
+            // Apply a small animation to draw attention
+            topItemElement.style.transition = 'transform 0.3s ease-out';
+            topItemElement.style.transform = 'scale(1.05)';
+            
+            setTimeout(() => {
+              if (topItemElement && topItemElement.parentNode) {
+                topItemElement.style.transform = '';
+              }
+            }, 300);
+          }
+        }, 50);
+      } catch (error) {
+        console.error("Error revealing next item:", error);
+      }
+    } else {
+      console.log("No more items in stack to reveal");
     }
+    
+    // Update stack count after revealing
+    updateStackCount();
   }
 
   // Initialize drag events for a single item
@@ -1482,25 +1531,62 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Start a new game
   function startNewGame() {
-    // Call our new initGame function that shuffles the game pieces
-    initGame();
+    console.log("Starting new game...");
+    try {
+      // Call our new initGame function that shuffles the game pieces
+      initGame();
+      console.log("Game started successfully");
+    } catch (error) {
+      console.error("Error starting game:", error);
+      // Try to recover if possible
+      setTimeout(() => {
+        console.log("Attempting game recovery...");
+        try {
+          // Force DOM refresh
+          sourceContainer.innerHTML = '';
+          timelineContainer.innerHTML = '';
+          
+          // Try again
+          initGame();
+          console.log("Game recovery successful");
+        } catch (recoveryError) {
+          console.error("Game recovery failed:", recoveryError);
+          // Show error to user
+          if (resultDisplay) {
+            resultDisplay.textContent = "Error loading game. Please refresh the page.";
+            resultDisplay.className = "incorrect";
+            resultDisplay.style.display = "block";
+          }
+        }
+      }, 500);
+    }
   }
   
   // Update the stack count indicator
   function updateStackCount() {
     const count = stackedEvents.length + (sourceContainer.querySelectorAll('.item').length);
-    if (document.getElementById('stack-count')) {
-      document.getElementById('stack-count').textContent = count;
+    const countElement = document.getElementById('stack-count');
+    if (countElement) {
+      countElement.textContent = count;
+      console.log("Updated stack count: " + count);
+    } else {
+      console.error("Stack count element not found");
     }
   }
   
   // Fisher-Yates shuffle algorithm
   function shuffle(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
+    if (!array || !Array.isArray(array)) {
+      console.error("Invalid array provided to shuffle function");
+      return [];
     }
-    return array;
+    
+    const newArray = [...array]; // Create a copy to avoid modifying the original
+    for (let i = newArray.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+    }
+    return newArray;
   }
   
   // Check if all events have been placed and show the share button if needed
@@ -1642,13 +1728,33 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Initialize game
   function initGame() {
+    console.log("Initializing game...");
+    
+    // Check if required DOM elements exist
+    if (!sourceContainer || !timelineContainer) {
+      console.error("Required game containers not found");
+      throw new Error("Game containers not found");
+    }
+    
     // Track game start for statistics
-    trackGameStart();
+    if (typeof trackGameStart === 'function') {
+      try {
+        trackGameStart();
+      } catch (e) {
+        console.warn("Error tracking game start:", e);
+        // Continue without tracking
+      }
+    }
     
     // Define updateScore function if it doesn't exist
     if (typeof updateScore !== 'function') {
       // Update score display
       window.updateScore = function() {
+        if (!scoreDisplay) {
+          console.error("Score display element not found");
+          return;
+        }
+        
         scoreDisplay.textContent = score;
         
         // Add glowing effect when score increases
@@ -1666,7 +1772,10 @@ document.addEventListener('DOMContentLoaded', () => {
       // Update the scoring explanation based on current correct answer count
       window.updateScoringExplanation = function() {
         const scoringExplanation = document.getElementById('scoring-explanation');
-        if (!scoringExplanation) return;
+        if (!scoringExplanation) {
+          console.warn("Scoring explanation element not found");
+          return;
+        }
         
         let pointsWorth = 0;
         
@@ -1695,8 +1804,18 @@ document.addEventListener('DOMContentLoaded', () => {
       };
     }
     
+    // Verify historicalEvents exists and has items
+    if (!historicalEvents || !Array.isArray(historicalEvents) || historicalEvents.length === 0) {
+      console.error("Historical events not found or empty");
+      throw new Error("Game data missing");
+    }
+    
+    // Create a copy to avoid modifying the original
+    let eventsToUse = [...historicalEvents];
+    
     // Shuffle the historical events to randomize the order
-    shuffleArray(historicalEvents);
+    eventsToUse = shuffle(eventsToUse);
+    console.log("Shuffled events:", eventsToUse.map(e => e.event).join(', '));
     
     // Reset score and variables
     score = 0;
@@ -1725,10 +1844,17 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     // Create items for each event
-    const shuffledEvents = [...historicalEvents];
+    const shuffledEvents = [...eventsToUse];
     
     // Take the first event from the shuffled array for the timeline starting point
     const firstEvent = shuffledEvents.shift();
+    
+    if (!firstEvent) {
+      console.error("No first event available after shuffle");
+      throw new Error("Game initialization failed");
+    }
+    
+    console.log("First event:", firstEvent.event);
     
     // Add first event to the timeline container
     const firstEventElement = document.createElement('div');
@@ -1749,6 +1875,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add remaining events to stack
     remainingEvents = shuffledEvents;
     
+    console.log("Remaining events count: " + remainingEvents.length);
+    
     // Store all remaining events except the top one in stackedEvents
     stackedEvents = remainingEvents.slice(0, remainingEvents.length - 1);
     
@@ -1766,8 +1894,12 @@ document.addEventListener('DOMContentLoaded', () => {
       topItemElement.style.backgroundColor = topEvent.color;
       sourceContainer.appendChild(topItemElement);
       
+      console.log("Top stack item created: " + topEvent.event);
+      
       // Show stack count
       updateStackCount();
+    } else {
+      console.warn("No remaining events for stack");
     }
     
     // Make sure timeline doesn't show empty message
@@ -1776,19 +1908,21 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Initialize drag and drop functionality
     initDragAndDrop();
-  }
-  
-  // Fisher-Yates shuffle algorithm to randomize array
-  function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-      // Generate random index
-      const j = Math.floor(Math.random() * (i + 1));
-      // Swap elements
-      [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
+    
+    console.log("Game initialization complete");
+    
+    // Force a check to ensure top stack item is visible
+    setTimeout(() => {
+      const topStackItems = sourceContainer.querySelectorAll('.item');
+      console.log("Source container items after init: " + topStackItems.length);
+      
+      if (topStackItems.length === 0 && stackedEvents.length > 0) {
+        console.log("No visible items in source container, revealing next in stack");
+        revealNextInStack();
+      }
+    }, 500);
   }
   
   // Call startNewGame directly when page loads instead of hooking up button events
   startNewGame();
-}); 
+} 
