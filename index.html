@@ -142,7 +142,7 @@
     });
   </script>
   <script>
-    // Add timestamp to script loading
+    // Load game script with error handling
     const scriptTimestamp = new Date().getTime();
     const script = document.createElement('script');
     script.src = `script.js?v=${scriptTimestamp}`;
@@ -162,38 +162,44 @@
     // Add success handler
     script.onload = function() {
       console.log("Game script loaded successfully");
+      
+      // Force a small delay for Chrome to ensure DOM is fully ready
+      setTimeout(function() {
+        // Trigger a custom event to ensure game initialization happens after DOM is ready
+        const gameReadyEvent = new Event('gameScriptReady');
+        document.dispatchEvent(gameReadyEvent);
+        console.log("Game ready event dispatched");
+      }, 100);
     };
     
     document.body.appendChild(script);
   </script>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-  
-  <!-- Initialize Firebase -->
+  <!-- Chrome-specific fix script -->
   <script>
-    // Your web app's Firebase configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyAug4qLTCqmfwaPiLBQAJI5G726D8KWGs8",
-      authDomain: "racing-quiz-game.firebaseapp.com",
-      databaseURL: "https://racing-quiz-game-default-rtdb.firebaseio.com",
-      projectId: "racing-quiz-game",
-      storageBucket: "racing-quiz-game.firebasestorage.app",
-      messagingSenderId: "266538240177",
-      appId: "1:266538240177:web:45128d13f5523e6c6dfa90",
-      measurementId: "G-82WE4L1P78"
-    };
-
-    // Initialize Firebase with error handling
-    try {
-      firebase.initializeApp(firebaseConfig);
-      console.log("Firebase initialized successfully");
-    } catch (error) {
-      console.error("Error initializing Firebase:", error);
-      // Continue without Firebase - game will still work but without analytics
-    }
+    // Force re-initialization after a delay if needed (Chrome fix)
+    window.addEventListener('load', function() {
+      console.log("Window loaded event fired");
+      setTimeout(function() {
+        // Check if game elements exist
+        const sourceItems = document.querySelectorAll('#source-container .item');
+        console.log("Checking game elements, found: " + sourceItems.length + " source items");
+        
+        if (sourceItems.length === 0) {
+          console.log("No game pieces found, attempting to reinitialize game");
+          // Force reinitialization
+          if (typeof startNewGame === 'function') {
+            startNewGame();
+          } else if (window.startNewGame) {
+            window.startNewGame();
+          } else {
+            console.error("Game initialization function not found");
+            // Last resort - reload the page
+            window.location.reload();
+          }
+        }
+      }, 1000); // Longer delay to ensure everything has had time to load
+    });
   </script>
 
   <!-- Add loading indicator -->
@@ -260,6 +266,35 @@
         loadingIndicator.style.display = 'none';
       }
     });
+  </script>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  
+  <!-- Initialize Firebase -->
+  <script>
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAug4qLTCqmfwaPiLBQAJI5G726D8KWGs8",
+      authDomain: "racing-quiz-game.firebaseapp.com",
+      databaseURL: "https://racing-quiz-game-default-rtdb.firebaseio.com",
+      projectId: "racing-quiz-game",
+      storageBucket: "racing-quiz-game.firebasestorage.app",
+      messagingSenderId: "266538240177",
+      appId: "1:266538240177:web:45128d13f5523e6c6dfa90",
+      measurementId: "G-82WE4L1P78"
+    };
+
+    // Initialize Firebase with error handling
+    try {
+      firebase.initializeApp(firebaseConfig);
+      console.log("Firebase initialized successfully");
+    } catch (error) {
+      console.error("Error initializing Firebase:", error);
+      // Continue without Firebase - game will still work but without analytics
+    }
   </script>
 </body>
 </html> 
