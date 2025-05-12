@@ -91,39 +91,39 @@ document.addEventListener('DOMContentLoaded', () => {
   // Historical events game data
   const historicalEvents = [
     {
-      year: 2006,
-      event: "TOTAL TRUTH, RON PIERCE",
-      fullText: "<b>2006</b>, TOTAL TRUTH, RON PIERCE",
+      year: 1991,
+      event: "Die Laughing ($1,431,692)",
+      fullText: "<b>1991</b>, Die Laughing ($1,431,692)",
       color: "#FF5252" // Bright red
     },
     {
-      year: 2007,
-      event: "TELL ALL, JODY JAMIESON",
-      fullText: "<b>2007</b>, TELL ALL, JODY JAMIESON",
+      year: 1993,
+      event: "Presidential Ball ($1,234,104)",
+      fullText: "<b>1993</b>, Presidential Ball ($1,234,104)",
       color: "#448AFF" // Bright blue
     },
     {
-      year: 2009,
-      event: "WELL SAID, RON PIERCE",
-      fullText: "<b>2009</b>, WELL SAID, RON PIERCE",
+      year: 2001,
+      event: "Bettors Delight ($1,093,411)",
+      fullText: "<b>2001</b>, Bettors Delight ($1,093,411)",
       color: "#FF9800" // Bright orange
     },
     {
-      year: 2011,
-      event: "UP THE CREDIT, JODY JAMIESON",
-      fullText: "<b>2011</b>, UP THE CREDIT, JODY JAMIESON",
+      year: 2002,
+      event: "Mach Three ($1,221,208)",
+      fullText: "<b>2002</b>, Mach Three ($1,221,208)",
       color: "#4CAF50" // Bright green
     },
     {
-      year: 2016,
-      event: "BETTING LINE, DAVID MILLER",
-      fullText: "<b>2016</b>, BETTING LINE, DAVID MILLER",
+      year: 2006,
+      event: "Jeremes Jet ($1,205,542)",
+      fullText: "<b>2006</b>, Jeremes Jet ($1,205,542)",
       color: "#9C27B0" // Bright purple
     },
     {
-      year: 2017,
-      event: "FEAR THE DRAGON, DAVID MILLER",
-      fullText: "<b>2017</b>, FEAR THE DRAGON, DAVID MILLER",
+      year: 2011,
+      event: "Big Jim ($1,077,580)",
+      fullText: "<b>2011</b>, Big Jim ($1,077,580)",
       color: "#00BCD4" // Bright cyan
     }
   ];
