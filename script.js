@@ -101,39 +101,39 @@ function initializeGame() {
   // Historical events game data
   const historicalEvents = [
     {
-      year: 1991,
-      event: "Die Laughing ($1,431,692)",
-      fullText: "<b>1991</b>, Die Laughing ($1,431,692)",
+      year: 2000,
+      event: "Camotion (3rd)",
+      fullText: "<b>2000</b>, Camotion (3rd)",
       color: "#FF5252" // Bright red
     },
     {
-      year: 1993,
-      event: "Presidential Ball ($1,234,104)",
-      fullText: "<b>1993</b>, Presidential Ball ($1,234,104)",
+      year: 2001,
+      event: "Real Desire (9th)",
+      fullText: "<b>2001</b>, Real Desire (9th)",
       color: "#448AFF" // Bright blue
     },
     {
-      year: 2001,
-      event: "Bettors Delight ($1,093,411)",
-      fullText: "<b>2001</b>, Bettors Delight ($1,093,411)",
+      year: 2005,
+      event: "Leading X Ample (5th)",
+      fullText: "<b>2005</b>, Leading X Ample (5th)",
       color: "#FF9800" // Bright orange
     },
     {
-      year: 2002,
-      event: "Mach Three ($1,221,208)",
-      fullText: "<b>2002</b>, Mach Three ($1,221,208)",
+      year: 2011,
+      event: "Roll With Joe (2nd)",
+      fullText: "<b>2011</b>, Roll With Joe (2nd)",
       color: "#4CAF50" // Bright green
     },
     {
-      year: 2006,
-      event: "Jeremes Jet ($1,205,542)",
-      fullText: "<b>2006</b>, Jeremes Jet ($1,205,542)",
+      year: 2012,
+      event: "Thinking Out Loud (Winner)",
+      fullText: "<b>2012</b>, Thinking Out Loud (Winner)",
       color: "#9C27B0" // Bright purple
     },
     {
-      year: 2011,
-      event: "Big Jim ($1,077,580)",
-      fullText: "<b>2011</b>, Big Jim ($1,077,580)",
+      year: 2016,
+      event: "Control The Moment (3rd)",
+      fullText: "<b>2016</b>, Control The Moment (3rd)",
       color: "#00BCD4" // Bright cyan
     }
   ];
