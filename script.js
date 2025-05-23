@@ -101,39 +101,39 @@ function initializeGame() {
   // Historical events game data
   const historicalEvents = [
     {
-      year: 2000,
-      event: "Camotion (3rd)",
-      fullText: "<b>2000</b>, Camotion (3rd)",
+      year: 1976,
+      event: "Joe O'Brien",
+      fullText: "<b>1976</b>, Joe O'Brien",
       color: "#FF5252" // Bright red
     },
     {
-      year: 2001,
-      event: "Real Desire (9th)",
-      fullText: "<b>2001</b>, Real Desire (9th)",
+      year: 1978,
+      event: "Keith Waples",
+      fullText: "<b>1978</b>, Keith Waples",
       color: "#448AFF" // Bright blue
     },
     {
-      year: 2005,
-      event: "Leading X Ample (5th)",
-      fullText: "<b>2005</b>, Leading X Ample (5th)",
+      year: 1993,
+      event: "Michel Lachance",
+      fullText: "<b>1993</b>, Michel Lachance",
       color: "#FF9800" // Bright orange
     },
     {
-      year: 2011,
-      event: "Roll With Joe (2nd)",
-      fullText: "<b>2011</b>, Roll With Joe (2nd)",
+      year: 2001,
+      event: "William Wellwood",
+      fullText: "<b>2001</b>, William Wellwood",
       color: "#4CAF50" // Bright green
     },
     {
-      year: 2012,
-      event: "Thinking Out Loud (Winner)",
-      fullText: "<b>2012</b>, Thinking Out Loud (Winner)",
+      year: 2006,
+      event: "Doug Brown",
+      fullText: "<b>2006</b>, Doug Brown",
       color: "#9C27B0" // Bright purple
     },
     {
-      year: 2016,
-      event: "Control The Moment (3rd)",
-      fullText: "<b>2016</b>, Control The Moment (3rd)",
+      year: 2011,
+      event: "Steve Condren",
+      fullText: "<b>2011</b>, Steve Condren",
       color: "#00BCD4" // Bright cyan
     }
   ];
