@@ -101,39 +101,39 @@ function initializeGame() {
   // Historical events game data
   const historicalEvents = [
     {
-      year: 1976,
-      event: "Joe O'Brien",
-      fullText: "<b>1976</b>, Joe O'Brien",
+      year: 1969,
+      event: "Fresh Yankee",
+      fullText: "<b>1969</b>, Fresh Yankee",
       color: "#FF5252" // Bright red
     },
     {
-      year: 1978,
-      event: "Keith Waples",
-      fullText: "<b>1978</b>, Keith Waples",
+      year: 1988,
+      event: "Mack Lobell's first win",
+      fullText: "<b>1988</b>, Mack Lobell's first win",
       color: "#448AFF" // Bright blue
     },
     {
-      year: 1993,
-      event: "Michel Lachance",
-      fullText: "<b>1993</b>, Michel Lachance",
+      year: 1990,
+      event: "Mack Lobell's second win",
+      fullText: "<b>1990</b>, Mack Lobell's second win",
       color: "#FF9800" // Bright orange
     },
     {
-      year: 2001,
-      event: "William Wellwood",
-      fullText: "<b>2001</b>, William Wellwood",
+      year: 1991,
+      event: "Peace Corps",
+      fullText: "<b>1991</b>, Peace Corps",
       color: "#4CAF50" // Bright green
     },
     {
-      year: 2006,
-      event: "Doug Brown",
-      fullText: "<b>2006</b>, Doug Brown",
+      year: 1992,
+      event: "Billyjojimbob",
+      fullText: "<b>1992</b>, Billyjojimbob",
       color: "#9C27B0" // Bright purple
     },
     {
-      year: 2011,
-      event: "Steve Condren",
-      fullText: "<b>2011</b>, Steve Condren",
+      year: 1998,
+      event: "Moni Maker",
+      fullText: "<b>1998</b>, Moni Maker",
       color: "#00BCD4" // Bright cyan
     }
   ];
