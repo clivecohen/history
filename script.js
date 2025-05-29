@@ -101,39 +101,39 @@ function initializeGame() {
   // Historical events game data
   const historicalEvents = [
     {
-      year: 1969,
-      event: "Fresh Yankee",
-      fullText: "<b>1969</b>, Fresh Yankee",
+      year: 2011,
+      event: "Up The Credit",
+      fullText: "<b>2011</b>, Up The Credit",
       color: "#FF5252" // Bright red
     },
     {
-      year: 1988,
-      event: "Mack Lobell's first win",
-      fullText: "<b>1988</b>, Mack Lobell's first win",
+      year: 2014,
+      event: "Hes Watching",
+      fullText: "<b>2014</b>, Hes Watching",
       color: "#448AFF" // Bright blue
     },
     {
-      year: 1990,
-      event: "Mack Lobell's second win",
-      fullText: "<b>1990</b>, Mack Lobell's second win",
+      year: 2015,
+      event: "Dudes The Man",
+      fullText: "<b>2015</b>, Dudes The Man",
       color: "#FF9800" // Bright orange
     },
     {
-      year: 1991,
-      event: "Peace Corps",
-      fullText: "<b>1991</b>, Peace Corps",
+      year: 2016,
+      event: "Betting Line",
+      fullText: "<b>2016</b>, Betting Line",
       color: "#4CAF50" // Bright green
     },
     {
-      year: 1992,
-      event: "Billyjojimbob",
-      fullText: "<b>1992</b>, Billyjojimbob",
+      year: 2017,
+      event: "Hurrican Beach",
+      fullText: "<b>2017</b>, Hurrican Beach",
       color: "#9C27B0" // Bright purple
     },
     {
-      year: 1998,
-      event: "Moni Maker",
-      fullText: "<b>1998</b>, Moni Maker",
+      year: 2022,
+      event: "Magical Arthur",
+      fullText: "<b>2022</b>, Magical Arthur",
       color: "#00BCD4" // Bright cyan
     }
   ];
